@@ -1119,57 +1119,78 @@ window.PCPDemoShow = function (which) {
 
   /* ---------- Impaginazione ---------- */
   /**
-   * Cornice dell'incontro: la foto dei giocatori (facoltativa, solo sul dispositivo) riempie tutto lo spazio sotto l'intestazione;
-   * sopra si sovrappongono i riferimenti dell'incontro, i nomi delle coppie e il risultato. Senza foto resta un campo da padel stilizzato,
-   * con il risultato al centro: nessuno spazio vuoto.
+   * Story / immagine dell'incontro. Il PNG ha un'apertura REALMENTE trasparente: la foto (facoltativa, solo sul dispositivo) viene disegnata prima e la cornice sopra,
+   * così resta dietro. Senza foto l'apertura resta trasparente (alfa 0). Sotto l'apertura: risultato; poi, solo se scelto, lo sponsor dell'area Sponsor esistente.
+   * Se lo sponsor non c'è, la sua area non esiste e lo spazio va alla foto.
    */
-  function matchFrame(ctx, o, x, y, w, h, k, F, pal, report) {
-    var m = o.x.m, g = o.x.g, stb = m.score.stb, R = 32;
-    ctx.save(); rr(ctx, x, y, w, h, R); ctx.clip();
+  function buildMatchStory(o, F, report) {
+    var W = F.w, H = F.h, t = o.t, m = o.x.m, g = o.x.g, stb = m.score.stb, M = 40, cw = W - M * 2;
+    var pal = (o.catColor !== false && t && CAT[t.id]) || { bg: C.bg, deep: C.deep };
+    var cv = document.createElement('canvas'); cv.width = W; cv.height = H; var ctx = cv.getContext('2d'); ctx.textBaseline = 'alphabetic';
+    var headH = 176, footH = 84, gap = 30, R = 42;
+    // misure del risultato (dipendono dai nomi)
+    var bw = 72, sw2 = 96, bg = 10, boxW = bw * 2 + bg + (stb ? sw2 + bg : 0), pad = 32, nameW = cw - pad * 2 - boxW - 56;
+    var na = nameLines(ctx, m.a.name, nameW, 42, 24, m.winner === 'A' ? 700 : 600, report), nb = nameLines(ctx, m.b.name, nameW, 42, 24, m.winner === 'B' ? 700 : 600, report);
+    var rowA = Math.max(92, na.lines.length * na.size * 1.2 + 26), rowB = Math.max(92, nb.lines.length * nb.size * 1.2 + 26);
+    var pts = g.official && m.ptsA != null ? 'Punti assegnati  ' + m.ptsA + (m.pendingA ? '*' : '') + ' – ' + m.ptsB + (m.pendingB ? '*' : '') : '';
+    var ref = [m.id, m.playedOn ? 'giocato ' + U.day(m.playedOn) : null].filter(Boolean).join('  ·  ');
+    var panH = 26 + 46 + rowA + rowB + (pts ? 56 : 22), spImgs = (o.sponsorImgs || []).slice(0, 1), spH = spImgs.length ? 118 : 0;
+    var panY = H - footH - gap - spH - (spH ? gap - 8 : 0) - panH, apX = M, apY = headH + 24, apW = cw, apH = panY - gap - apY;
+    var hole = function () { rr(ctx, apX, apY, apW, apH, R); };
+    // 1. fotografia (dietro): riempie l'apertura senza deformarsi; ingrandimento e posizione scelti dall'operatore
     if (o.photo) {
-      var im = o.photo, sc = Math.max(w / im.naturalWidth, h / im.naturalHeight), sw = w / sc, sh = h / sc;
-      ctx.drawImage(im, (im.naturalWidth - sw) / 2, (im.naturalHeight - sh) / 2, sw, sh, x, y, w, h);
-    } else {
-      var gr = ctx.createLinearGradient(x, y, x + w, y + h); gr.addColorStop(0, '#0f3f6b'); gr.addColorStop(1, pal.deep); ctx.fillStyle = gr; ctx.fillRect(x, y, w, h);
-      ctx.strokeStyle = 'rgba(255,255,255,.16)'; ctx.lineWidth = 6;
-      var cx0 = x + w * 0.14, cy0 = y + h * 0.07, cw2 = w * 0.72, ch2 = h * 0.86;
-      ctx.strokeRect(cx0, cy0, cw2, ch2); ctx.beginPath(); ctx.moveTo(cx0, cy0 + ch2 / 2); ctx.lineTo(cx0 + cw2, cy0 + ch2 / 2);
-      ctx.moveTo(cx0 + cw2 / 2, cy0 + ch2 * 0.2); ctx.lineTo(cx0 + cw2 / 2, cy0 + ch2 * 0.8); ctx.moveTo(cx0, cy0 + ch2 * 0.2); ctx.lineTo(cx0 + cw2, cy0 + ch2 * 0.2); ctx.moveTo(cx0, cy0 + ch2 * 0.8); ctx.lineTo(cx0 + cw2, cy0 + ch2 * 0.8); ctx.stroke();
+      var im = o.photo, v = o.photoView || { zoom: 1, x: 0.5, y: 0.5 }, sc = Math.max(apW / im.naturalWidth, apH / im.naturalHeight) * Math.max(1, v.zoom || 1);
+      var vw = apW / sc, vh = apH / sc, sx = (im.naturalWidth - vw) * Math.min(1, Math.max(0, v.x == null ? 0.5 : v.x)), sy = (im.naturalHeight - vh) * Math.min(1, Math.max(0, v.y == null ? 0.5 : v.y));
+      ctx.save(); hole(); ctx.clip(); ctx.drawImage(im, sx, sy, vw, vh, apX, apY, apW, apH); ctx.restore();
     }
-    // riferimenti dell'incontro, in alto a sinistra
-    var ref = [m.id, m.playedOn ? 'giocato ' + U.day(m.playedOn) : null].filter(Boolean).join(' · ');
-    font(ctx, 26 * k, 700); var rw = ctx.measureText(ref).width + 40 * k, rh = 52 * k;
-    ctx.fillStyle = 'rgba(4,42,75,.82)'; rr(ctx, x + 24, y + 24, rw, rh, rh / 2); ctx.fill();
-    ctx.fillStyle = '#ffffff'; ctx.textAlign = 'left'; ctx.fillText(ref, x + 24 + 20 * k, y + 24 + rh * 0.68);
-    if (o.env !== 'PROD') { font(ctx, 22, 800); var tw = ctx.measureText('TEST · dati di prova').width + 30; ctx.fillStyle = C.sun; rr(ctx, x + w - 24 - tw, y + 28, tw, 40, 20); ctx.fill(); ctx.fillStyle = C.night; ctx.fillText('TEST · dati di prova', x + w - 24 - tw + 15, y + 56); }
-    // pannello risultato
-    var kk = k, pad = 34 * kk, bw = 70 * kk, sw2 = 92 * kk, gap = 10 * kk, boxW = bw * 2 + gap + (stb ? sw2 + gap : 0), nameW = w - 48 - pad * 2 - boxW - 44 * kk;
-    var na = nameLines(ctx, m.a.name, nameW, 40 * kk, 24 * kk, m.winner === 'A' ? 700 : 600, report), nb = nameLines(ctx, m.b.name, nameW, 40 * kk, 24 * kk, m.winner === 'B' ? 700 : 600, report);
-    var rowA = Math.max(84 * kk, na.lines.length * na.size * 1.2 + 24 * kk), rowB = Math.max(84 * kk, nb.lines.length * nb.size * 1.2 + 24 * kk);
-    var meta = o.x.g && o.x.g.official && m.ptsA != null ? 'Punti ' + m.ptsA + (m.pendingA ? '*' : '') + ' – ' + m.ptsB + (m.pendingB ? '*' : '') : '';
-    var head = 44 * kk, foot = meta ? 52 * kk : 14 * kk, ph = pad * 0.6 + head + rowA + rowB + foot;
-    var px = x + 24, pw = w - 48, py = o.photo ? y + h - 24 - ph : y + (h - ph) / 2;
-    if (o.photo) { var sg = ctx.createLinearGradient(0, py - 160, 0, y + h); sg.addColorStop(0, 'rgba(4,42,75,0)'); sg.addColorStop(1, 'rgba(4,42,75,.55)'); ctx.fillStyle = sg; ctx.fillRect(x, py - 160, w, y + h - py + 160); }
-    ctx.fillStyle = 'rgba(4,42,75,' + (o.photo ? '.88' : '.72') + ')'; rr(ctx, px, py, pw, ph, 28); ctx.fill();
-    var bx = px + pw - pad - boxW, yy = py + pad * 0.6;
-    font(ctx, 22 * kk, 600); ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.textAlign = 'center';
-    ctx.fillText('1°', bx + bw / 2, yy + 30 * kk); ctx.fillText('2°', bx + bw + gap + bw / 2, yy + 30 * kk); if (stb) ctx.fillText('STB', bx + (bw + gap) * 2 + sw2 / 2, yy + 30 * kk);
-    yy += head;
-    [['A', na, rowA, 0], ['B', nb, rowB, 1]].forEach(function (rw2) {
-      var win = m.winner === rw2[0], nl = rw2[1], hh = rw2[2], i = rw2[3], ty = yy + (hh - nl.lines.length * nl.size * 1.2) / 2 + nl.size * 0.95;
-      ctx.fillStyle = win ? C.sun : 'rgba(255,255,255,.25)'; rr(ctx, px + pad - 20 * kk, yy + 10 * kk, 7 * kk, hh - 20 * kk, 3.5 * kk); ctx.fill();
-      ctx.textAlign = 'left'; ctx.fillStyle = '#ffffff'; font(ctx, nl.size, win ? 700 : 600); nl.lines.forEach(function (l, j) { ctx.fillText(l, px + pad, ty + j * nl.size * 1.2); });
-      if (win) { var mw = Math.max.apply(null, nl.lines.map(function (l) { font(ctx, nl.size, 700); return ctx.measureText(l).width; })); ctx.fillStyle = C.sun; font(ctx, 36 * kk, 800); ctx.fillText('✓', px + pad + Math.min(nameW, mw) + 14 * kk, ty); }
-      var by = yy + (hh - 62 * kk) / 2;
-      m.score.sets.forEach(function (st, si) { var wn = st[i] > st[1 - i], bxx = bx + si * (bw + gap);
-        ctx.fillStyle = wn ? C.sun : 'rgba(255,255,255,.16)'; rr(ctx, bxx, by, bw, 62 * kk, 12 * kk); ctx.fill();
-        ctx.fillStyle = wn ? C.night : '#ffffff'; ctx.textAlign = 'center'; font(ctx, 40 * kk, 800); ctx.fillText(String(st[i]), bxx + bw / 2, by + 46 * kk); });
-      if (stb) { var w2 = stb[i] > stb[1 - i], sx = bx + (bw + gap) * 2; ctx.fillStyle = w2 ? C.sun : 'rgba(255,255,255,.16)'; rr(ctx, sx, by, sw2, 62 * kk, 12 * kk); ctx.fill();
-        ctx.fillStyle = w2 ? C.night : '#ffffff'; ctx.textAlign = 'center'; font(ctx, 36 * kk, 800); ctx.fillText(String(stb[i]), sx + sw2 / 2, by + 44 * kk); }
+    // 2. cornice opaca ovunque tranne l'apertura (riempimento pari-dispari: il buco resta com'è, cioè trasparente o con la foto)
+    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.moveTo(apX + R, apY); ctx.arcTo(apX + apW, apY, apX + apW, apY + apH, R); ctx.arcTo(apX + apW, apY + apH, apX, apY + apH, R); ctx.arcTo(apX, apY + apH, apX, apY, R); ctx.arcTo(apX, apY, apX + apW, apY, R); ctx.closePath();
+    ctx.fillStyle = pal.bg; ctx.fill('evenodd'); ctx.clip('evenodd');
+    // dettagli sportivi nella sola cornice: bande diagonali tenui e righe di campo appena accennate
+    var band = function (x, y, w, h, sk, col) { ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(x + sk, y); ctx.lineTo(x + w + sk, y); ctx.lineTo(x + w, y + h); ctx.lineTo(x, y + h); ctx.closePath(); ctx.fill(); };
+    band(W - 420, 0, 150, headH, 70, 'rgba(255,255,255,.06)'); band(W - 250, 0, 60, headH, 70, 'rgba(255,255,255,.09)'); band(W - 150, 0, 24, headH, 70, 'rgba(248,188,58,.35)');
+    ctx.strokeStyle = 'rgba(255,255,255,.06)'; ctx.lineWidth = 5; ctx.save(); ctx.translate(W * 0.55, H * 0.55); ctx.rotate(0.24); ctx.strokeRect(0, 0, 560, 1000); ctx.restore();
+    ctx.restore();
+    // anello sottile intorno all'apertura (fuori dal buco: non copre la foto)
+    ctx.save(); ctx.strokeStyle = C.sun; ctx.lineWidth = 8; rr(ctx, apX - 4, apY - 4, apW + 8, apH + 8, R + 4); ctx.stroke(); ctx.restore();
+    // intestazione compatta: logo ufficiale (non modificato) su targa bianca, evento, categoria · girone
+    var tx = M, lh = 100;
+    if (o.logo) { var lw = lh * o.logo.naturalWidth / o.logo.naturalHeight, pw = lw + 30, ph = lh + 24; ctx.fillStyle = '#ffffff'; rr(ctx, M, 24, pw, ph, 22); ctx.fill(); ctx.drawImage(o.logo, M + 15, 36, lw, lh); tx = M + pw + 28; }
+    ctx.textAlign = 'left'; ctx.fillStyle = C.sun; font(ctx, 28, 800); ctx.fillText('Elba Winter Championship', tx, 66);
+    var title = t.name + ' · ' + g.label, tl = nameLines(ctx, title, W - M - tx - 20, 56, 32, 800, report); font(ctx, tl.size, 800); ctx.fillStyle = '#ffffff'; ctx.fillText(tl.lines[0], tx, 128);
+    if (o.env !== 'PROD') { font(ctx, 20, 800); var tw = ctx.measureText('TEST · dati di prova').width + 26; ctx.fillStyle = C.sun; rr(ctx, W - M - tw, 28, tw, 36, 18); ctx.fill(); ctx.fillStyle = C.night; ctx.fillText('TEST · dati di prova', W - M - tw + 13, 53); }
+    [[C.terra, 0, 0.58], [C.sun, 0.58, 0.76], [C.skyl, 0.76, 0.88], [C.sky, 0.88, 1]].forEach(function (st) { ctx.fillStyle = st[0]; ctx.fillRect(W * st[1], headH - 8, W * (st[2] - st[1]) + 1, 8); });
+    // dettaglio diagonale tra apertura e risultato
+    var gy = apY + apH + 11; band(M + 8, gy, 230, 9, 18, C.terra); band(M + 256, gy, 90, 9, 18, C.sun); band(M + 364, gy, 42, 9, 18, C.sky);
+    // risultato
+    ctx.fillStyle = 'rgba(4,22,40,.82)'; rr(ctx, M, panY, cw, panH, 30); ctx.fill();
+    var bx = M + cw - pad - boxW, yy = panY + 26;
+    ctx.textAlign = 'left'; font(ctx, 26, 700); ctx.fillStyle = 'rgba(255,255,255,.82)'; ctx.fillText(ref, M + pad, yy + 32);
+    font(ctx, 22, 600); ctx.fillStyle = 'rgba(255,255,255,.65)'; ctx.textAlign = 'center';
+    ctx.fillText('1°', bx + bw / 2, yy + 30); ctx.fillText('2°', bx + bw + bg + bw / 2, yy + 30); if (stb) ctx.fillText('STB', bx + (bw + bg) * 2 + sw2 / 2, yy + 30);
+    yy += 46;
+    [['A', na, rowA, 0], ['B', nb, rowB, 1]].forEach(function (rw) {
+      var win = m.winner === rw[0], nl = rw[1], hh = rw[2], i = rw[3], ty = yy + (hh - nl.lines.length * nl.size * 1.2) / 2 + nl.size * 0.95;
+      ctx.fillStyle = win ? C.sun : 'rgba(255,255,255,.25)'; rr(ctx, M + pad - 20, yy + 10, 7, hh - 20, 3.5); ctx.fill();
+      ctx.textAlign = 'left'; ctx.fillStyle = '#ffffff'; font(ctx, nl.size, win ? 700 : 600); nl.lines.forEach(function (l, j) { ctx.fillText(l, M + pad, ty + j * nl.size * 1.2); });
+      if (win) { var mw = Math.max.apply(null, nl.lines.map(function (l) { font(ctx, nl.size, 700); return ctx.measureText(l).width; })); ctx.fillStyle = C.sun; font(ctx, 38, 800); ctx.fillText('✓', M + pad + Math.min(nameW, mw) + 14, ty); }
+      var by = yy + (hh - 64) / 2;
+      m.score.sets.forEach(function (st, si) { var wn = st[i] > st[1 - i], bxx = bx + si * (bw + bg); ctx.fillStyle = wn ? C.sun : 'rgba(255,255,255,.16)'; rr(ctx, bxx, by, bw, 64, 13); ctx.fill(); ctx.fillStyle = wn ? C.night : '#ffffff'; ctx.textAlign = 'center'; font(ctx, 42, 800); ctx.fillText(String(st[i]), bxx + bw / 2, by + 47); });
+      if (stb) { var w2 = stb[i] > stb[1 - i], sx2 = bx + (bw + bg) * 2; ctx.fillStyle = w2 ? C.sun : 'rgba(255,255,255,.16)'; rr(ctx, sx2, by, sw2, 64, 13); ctx.fill(); ctx.fillStyle = w2 ? C.night : '#ffffff'; ctx.textAlign = 'center'; font(ctx, 38, 800); ctx.fillText(String(stb[i]), sx2 + sw2 / 2, by + 45); }
       yy += hh;
     });
-    if (meta) { font(ctx, 24 * kk, 500); ctx.fillStyle = 'rgba(255,255,255,.78)'; ctx.textAlign = 'left'; ctx.fillText(meta, px + pad, yy + 34 * kk); }
-    ctx.restore();
+    if (pts) { font(ctx, 25, 600); ctx.fillStyle = 'rgba(255,255,255,.8)'; ctx.textAlign = 'left'; ctx.fillText(pts, M + pad, yy + 36); }
+    // sponsor (solo se scelto nell'area Sponsor): logo su targa bianca, proporzioni originali; altrimenti nessuna traccia
+    if (spImgs.length) {
+      var sim = spImgs[0], sh = 78, sw3 = Math.min(cw - 80, sh * sim.naturalWidth / sim.naturalHeight), spw = sw3 + 48, spx = (W - spw) / 2, spy = panY + panH + gap - 8;
+      ctx.fillStyle = '#ffffff'; rr(ctx, spx, spy, spw, sh + 40, 24); ctx.fill(); ctx.drawImage(sim, spx + 24, spy + 20, sw3, sh);
+    }
+    // piè di pagina: club a sinistra, Instagram a destra
+    ctx.fillStyle = pal.deep; ctx.fillRect(0, H - footH, W, footH);
+    var fy = H - footH / 2 + 8; ctx.fillStyle = '#ffffff'; ctx.textAlign = 'left'; font(ctx, 27, 700); ctx.fillText(U.BRAND.club, M, fy);
+    ctx.textAlign = 'right'; font(ctx, 25, 600); if (U.BRAND.handle) ctx.fillText('Instagram ' + U.BRAND.handle, W - M, fy);
+    report.pages = 1; report.aperture = { x: apX, y: apY, w: apW, h: apH };
+    return { canvases: [cv], report: report, format: F };
   }
 
   function build(o) {
@@ -1190,16 +1211,15 @@ window.PCPDemoShow = function (which) {
       blocks.push(resultsBlock(scratch, 'Ultimi ' + (o.list.length === 1 ? 'risultato' : o.list.length + ' risultati'), o.list, o.g ? null : function (x) { return (t ? '' : x.t.name + ' · ') + x.g.label; }, cw, k, report));
     } else if (o.scope === 'match') {
       title = t.name + ' · ' + o.g.label;
-      o.matchFrame = true; // l'incontro ha una cornice propria (foto + risultato sovrapposto), non i blocchi bianchi
+      return buildMatchStory(o, F, report); // l'incontro ha una cornice propria: foto in apertura trasparente, risultato sotto
     } else {
       title = t.name + ' · Fase finale';
       blocks = playoffBlocks(scratch, t, cw, k, report);
     }
-    var headH = 250, footH = 84, titleH = 80 * k, gapB = 26, top0 = headH + 30, hasSp = !!(o.sponsorImgs && o.sponsorImgs.length), maxY = H - footH - (hasSp ? 124 : o.env !== 'PROD' && !o.matchFrame ? 72 : 24);
+    var headH = 250, footH = 84, titleH = 80 * k, gapB = 26, top0 = headH + 30, hasSp = !!(o.sponsorImgs && o.sponsorImgs.length), maxY = H - footH - (hasSp ? 124 : o.env !== 'PROD' ? 72 : 24);
     var pal = (o.catColor !== false && t && CAT[t.id]) || { bg: C.bg, deep: C.deep };
     var pages = [[]], y = top0;
-    if (o.matchFrame) pages[0].push({ custom: function (ctx, x, yy, w, hh) { matchFrame(ctx, o, x, yy, w, hh, k, F, pal, report); }, y: top0, h: maxY - top0 });
-    else blocks.forEach(function (b) {
+    blocks.forEach(function (b) {
       var i = 0, part = 0;
       var total = titleH + b.items.reduce(function (a, it) { return a + it.h; }, 0);
       if (b.keepTogether && total <= maxY - top0 && y + total > maxY && pages[pages.length - 1].length) { pages.push([]); y = top0; }
@@ -1234,7 +1254,7 @@ window.PCPDemoShow = function (which) {
       font(ctx, tl.size, 800); ctx.fillStyle = '#ffffff';
       tl.lines.slice(0, 2).forEach(function (l, i) { ctx.fillText(l, tx, (tl.lines.length > 1 ? 138 : 158) + i * tl.size * 1.08); });
       if (o.kicker) { ctx.fillStyle = '#b8cee2'; font(ctx, 26, 500); ctx.fillText(o.kicker, tx, tl.lines.length > 1 ? 138 + tl.size * 1.08 + 38 : 200); }
-      if (o.env !== 'PROD' && !o.matchFrame) {
+      if (o.env !== 'PROD') {
         font(ctx, 22, 800); var tw = ctx.measureText('TEST · dati di prova').width + 30;
         ctx.fillStyle = C.sun; rr(ctx, W - M - tw, H - footH - 58, tw, 40, 20); ctx.fill();
         ctx.fillStyle = C.night; ctx.textAlign = 'left'; ctx.fillText('TEST · dati di prova', W - M - tw + 15, H - footH - 30);
@@ -1242,7 +1262,6 @@ window.PCPDemoShow = function (which) {
       [[C.terra, 0, 0.58], [C.sun, 0.58, 0.76], [C.skyl, 0.76, 0.88], [C.sky, 0.88, 1]].forEach(function (st) { ctx.fillStyle = st[0]; ctx.fillRect(W * st[1], headH - 8, W * (st[2] - st[1]) + 1, 8); });
       // blocchi
       segs.forEach(function (sg) {
-        if (sg.custom) { sg.custom(ctx, M, sg.y, cw, sg.h); return; }
         ctx.fillStyle = C.card; rr(ctx, M, sg.y, cw, sg.h, 30); ctx.fill();
         ctx.save(); rr(ctx, M, sg.y, cw, sg.h, 30); ctx.clip();
         ctx.fillStyle = sg.b.accent; rr(ctx, M + 28 * k, sg.y + 26 * k, 10 * k, 34 * k, 5 * k); ctx.fill();
@@ -1570,14 +1589,14 @@ window.PCPDemoShow = function (which) {
     var isMatch = spec.o.scope === 'match', spItems = (S.snap.sponsors && S.snap.sponsors.items) || [];
     if (!S.exp || S.exp.key !== key) {
       var def = isMatch ? U.sponsorOf(S.snap, spec.o.x && spec.o.x.m ? spec.o.x.m.id : null) : null;
-      releaseExp(); S.exp = { key: key, format: 'social', res: null, msg: null, working: false, sp: def ? def.id : '', photo: null };
+      releaseExp(); S.exp = { key: key, format: isMatch ? 'story' : 'social', res: null, msg: null, working: false, sp: def ? def.id : '', photo: null, zoom: 1, px: 0.5, py: 0.5 };
     }
     var E = S.exp, X = root.PCPExport;
-    var again = function (ch) { var keep = { key: key, format: E.format, res: null, msg: null, working: false, sp: E.sp, photo: E.photo }; Object.keys(ch).forEach(function (k2) { keep[k2] = ch[k2]; }); if (E.res) E.res.images.forEach(function (im) { URL.revokeObjectURL(im.url); }); S.exp = keep; render(); };
+    var again = function (ch) { var keep = { key: key, format: E.format, res: null, msg: null, working: false, sp: E.sp, photo: E.photo, zoom: E.zoom, px: E.px, py: E.py }; Object.keys(ch).forEach(function (k2) { keep[k2] = ch[k2]; }); if (E.res) E.res.images.forEach(function (im) { URL.revokeObjectURL(im.url); }); S.exp = keep; render(); };
     var spSel = spItems.filter(function (x) { return x.id === E.sp; });
     if (!E.res && !E.working) {
       E.working = true;
-      X.render(Object.assign({ env: S.snap.meta.env, stamp: S.fetchedAt || new Date().toISOString(), format: E.format, sponsors: spSel, photoUrl: isMatch ? E.photo : null }, spec.o))
+      X.render(Object.assign({ env: S.snap.meta.env, stamp: S.fetchedAt || new Date().toISOString(), format: E.format, sponsors: spSel, photoUrl: isMatch ? E.photo : null, photoView: { zoom: E.zoom, x: E.px, y: E.py } }, spec.o))
         .then(function (res) { E.res = res; E.working = false; if (S.exp === E) render(); })
         .catch(function () { E.working = false; E.msg = 'Non è stato possibile creare le immagini su questo dispositivo.'; if (S.exp === E) render(); });
     }
@@ -1596,9 +1615,13 @@ window.PCPDemoShow = function (which) {
       spItems.length ? h('div', { class: 'card' }, h('label', { class: 'f', for: 'exp-sp' }, 'Sponsor / partner nell\'immagine (facoltativo)'),
         (function () { var sel = h('select', { class: 'in', id: 'exp-sp', onchange: function () { again({ sp: sel.value }); } }, [h('option', { value: '' }, 'Nessun logo')].concat(spItems.map(function (x) { return h('option', { value: x.id }, x.name + (x.main ? ' (principale)' : '')); }))); sel.value = E.sp || ''; return sel; })()) : null,
       isMatch ? h('div', { class: 'card' }, h('label', { class: 'f', for: 'exp-ph' }, 'Fotografia dell\'incontro (facoltativa)'),
-        h('input', { class: 'in', id: 'exp-ph', type: 'file', accept: 'image/*', onchange: function (ev) { var f = ev.target.files && ev.target.files[0]; if (!f) return; if (E.photo) URL.revokeObjectURL(E.photo); again({ photo: URL.createObjectURL(f) }); } }),
-        h('p', { class: 'sub' }, 'La foto resta sul tuo dispositivo ed entra solo nell\'immagine che crei qui. Condividila soltanto se le persone ritratte sono d\'accordo.'),
-        E.photo ? h('button', { class: 'btn sec2', type: 'button', onclick: function () { URL.revokeObjectURL(E.photo); again({ photo: null }); } }, 'Togli la foto') : null) : null,
+        h('input', { class: 'in', id: 'exp-ph', type: 'file', accept: 'image/*', onchange: function (ev) { var f = ev.target.files && ev.target.files[0]; if (!f) return; if (E.photo) URL.revokeObjectURL(E.photo); again({ photo: URL.createObjectURL(f), zoom: 1, px: 0.5, py: 0.5 }); } }),
+        h('p', { class: 'sub' }, 'La foto resta sul tuo dispositivo, non viene inviata a nessuno: entra solo nell\'immagine che crei qui. Senza foto l\'apertura resta trasparente. Condividila soltanto se le persone ritratte sono d\'accordo.'),
+        E.photo ? [
+          h('label', { class: 'f', for: 'exp-zoom' }, 'Ingrandisci'), h('input', { class: 'in', id: 'exp-zoom', type: 'range', min: '1', max: '3', step: '0.05', value: String(E.zoom), onchange: function (ev) { again({ zoom: Number(ev.target.value) }); } }),
+          h('label', { class: 'f', for: 'exp-px' }, 'Sposta a sinistra / destra'), h('input', { class: 'in', id: 'exp-px', type: 'range', min: '0', max: '1', step: '0.02', value: String(E.px), onchange: function (ev) { again({ px: Number(ev.target.value) }); } }),
+          h('label', { class: 'f', for: 'exp-py' }, 'Sposta in alto / in basso'), h('input', { class: 'in', id: 'exp-py', type: 'range', min: '0', max: '1', step: '0.02', value: String(E.py), onchange: function (ev) { again({ py: Number(ev.target.value) }); } }),
+          h('button', { class: 'btn sec2', type: 'button', onclick: function () { URL.revokeObjectURL(E.photo); again({ photo: null, zoom: 1, px: 0.5, py: 0.5 }); } }, 'Togli la foto')] : null) : null,
       E.msg ? h('div', { class: 'note info', role: 'status' }, E.msg) : null,
       !E.res ? h('div', { class: 'card empty', role: 'status' }, 'Creo le immagini…') : [
         h('p', { class: 'sub' }, E.res.images.length === 1 ? '1 immagine' : E.res.images.length + ' immagini: il contenuto è diviso su più pagine per non tagliare nulla.'),
