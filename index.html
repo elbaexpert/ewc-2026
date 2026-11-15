@@ -1118,6 +1118,60 @@ window.PCPDemoShow = function (which) {
   }
 
   /* ---------- Impaginazione ---------- */
+  /**
+   * Cornice dell'incontro: la foto dei giocatori (facoltativa, solo sul dispositivo) riempie tutto lo spazio sotto l'intestazione;
+   * sopra si sovrappongono i riferimenti dell'incontro, i nomi delle coppie e il risultato. Senza foto resta un campo da padel stilizzato,
+   * con il risultato al centro: nessuno spazio vuoto.
+   */
+  function matchFrame(ctx, o, x, y, w, h, k, F, pal, report) {
+    var m = o.x.m, g = o.x.g, stb = m.score.stb, R = 32;
+    ctx.save(); rr(ctx, x, y, w, h, R); ctx.clip();
+    if (o.photo) {
+      var im = o.photo, sc = Math.max(w / im.naturalWidth, h / im.naturalHeight), sw = w / sc, sh = h / sc;
+      ctx.drawImage(im, (im.naturalWidth - sw) / 2, (im.naturalHeight - sh) / 2, sw, sh, x, y, w, h);
+    } else {
+      var gr = ctx.createLinearGradient(x, y, x + w, y + h); gr.addColorStop(0, '#0f3f6b'); gr.addColorStop(1, pal.deep); ctx.fillStyle = gr; ctx.fillRect(x, y, w, h);
+      ctx.strokeStyle = 'rgba(255,255,255,.16)'; ctx.lineWidth = 6;
+      var cx0 = x + w * 0.14, cy0 = y + h * 0.07, cw2 = w * 0.72, ch2 = h * 0.86;
+      ctx.strokeRect(cx0, cy0, cw2, ch2); ctx.beginPath(); ctx.moveTo(cx0, cy0 + ch2 / 2); ctx.lineTo(cx0 + cw2, cy0 + ch2 / 2);
+      ctx.moveTo(cx0 + cw2 / 2, cy0 + ch2 * 0.2); ctx.lineTo(cx0 + cw2 / 2, cy0 + ch2 * 0.8); ctx.moveTo(cx0, cy0 + ch2 * 0.2); ctx.lineTo(cx0 + cw2, cy0 + ch2 * 0.2); ctx.moveTo(cx0, cy0 + ch2 * 0.8); ctx.lineTo(cx0 + cw2, cy0 + ch2 * 0.8); ctx.stroke();
+    }
+    // riferimenti dell'incontro, in alto a sinistra
+    var ref = [m.id, m.playedOn ? 'giocato ' + U.day(m.playedOn) : null].filter(Boolean).join(' · ');
+    font(ctx, 26 * k, 700); var rw = ctx.measureText(ref).width + 40 * k, rh = 52 * k;
+    ctx.fillStyle = 'rgba(4,42,75,.82)'; rr(ctx, x + 24, y + 24, rw, rh, rh / 2); ctx.fill();
+    ctx.fillStyle = '#ffffff'; ctx.textAlign = 'left'; ctx.fillText(ref, x + 24 + 20 * k, y + 24 + rh * 0.68);
+    if (o.env !== 'PROD') { font(ctx, 22, 800); var tw = ctx.measureText('TEST · dati di prova').width + 30; ctx.fillStyle = C.sun; rr(ctx, x + w - 24 - tw, y + 28, tw, 40, 20); ctx.fill(); ctx.fillStyle = C.night; ctx.fillText('TEST · dati di prova', x + w - 24 - tw + 15, y + 56); }
+    // pannello risultato
+    var kk = k, pad = 34 * kk, bw = 70 * kk, sw2 = 92 * kk, gap = 10 * kk, boxW = bw * 2 + gap + (stb ? sw2 + gap : 0), nameW = w - 48 - pad * 2 - boxW - 44 * kk;
+    var na = nameLines(ctx, m.a.name, nameW, 40 * kk, 24 * kk, m.winner === 'A' ? 700 : 600, report), nb = nameLines(ctx, m.b.name, nameW, 40 * kk, 24 * kk, m.winner === 'B' ? 700 : 600, report);
+    var rowA = Math.max(84 * kk, na.lines.length * na.size * 1.2 + 24 * kk), rowB = Math.max(84 * kk, nb.lines.length * nb.size * 1.2 + 24 * kk);
+    var meta = o.x.g && o.x.g.official && m.ptsA != null ? 'Punti ' + m.ptsA + (m.pendingA ? '*' : '') + ' – ' + m.ptsB + (m.pendingB ? '*' : '') : '';
+    var head = 44 * kk, foot = meta ? 52 * kk : 14 * kk, ph = pad * 0.6 + head + rowA + rowB + foot;
+    var px = x + 24, pw = w - 48, py = o.photo ? y + h - 24 - ph : y + (h - ph) / 2;
+    if (o.photo) { var sg = ctx.createLinearGradient(0, py - 160, 0, y + h); sg.addColorStop(0, 'rgba(4,42,75,0)'); sg.addColorStop(1, 'rgba(4,42,75,.55)'); ctx.fillStyle = sg; ctx.fillRect(x, py - 160, w, y + h - py + 160); }
+    ctx.fillStyle = 'rgba(4,42,75,' + (o.photo ? '.88' : '.72') + ')'; rr(ctx, px, py, pw, ph, 28); ctx.fill();
+    var bx = px + pw - pad - boxW, yy = py + pad * 0.6;
+    font(ctx, 22 * kk, 600); ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.textAlign = 'center';
+    ctx.fillText('1°', bx + bw / 2, yy + 30 * kk); ctx.fillText('2°', bx + bw + gap + bw / 2, yy + 30 * kk); if (stb) ctx.fillText('STB', bx + (bw + gap) * 2 + sw2 / 2, yy + 30 * kk);
+    yy += head;
+    [['A', na, rowA, 0], ['B', nb, rowB, 1]].forEach(function (rw2) {
+      var win = m.winner === rw2[0], nl = rw2[1], hh = rw2[2], i = rw2[3], ty = yy + (hh - nl.lines.length * nl.size * 1.2) / 2 + nl.size * 0.95;
+      ctx.fillStyle = win ? C.sun : 'rgba(255,255,255,.25)'; rr(ctx, px + pad - 20 * kk, yy + 10 * kk, 7 * kk, hh - 20 * kk, 3.5 * kk); ctx.fill();
+      ctx.textAlign = 'left'; ctx.fillStyle = '#ffffff'; font(ctx, nl.size, win ? 700 : 600); nl.lines.forEach(function (l, j) { ctx.fillText(l, px + pad, ty + j * nl.size * 1.2); });
+      if (win) { var mw = Math.max.apply(null, nl.lines.map(function (l) { font(ctx, nl.size, 700); return ctx.measureText(l).width; })); ctx.fillStyle = C.sun; font(ctx, 36 * kk, 800); ctx.fillText('✓', px + pad + Math.min(nameW, mw) + 14 * kk, ty); }
+      var by = yy + (hh - 62 * kk) / 2;
+      m.score.sets.forEach(function (st, si) { var wn = st[i] > st[1 - i], bxx = bx + si * (bw + gap);
+        ctx.fillStyle = wn ? C.sun : 'rgba(255,255,255,.16)'; rr(ctx, bxx, by, bw, 62 * kk, 12 * kk); ctx.fill();
+        ctx.fillStyle = wn ? C.night : '#ffffff'; ctx.textAlign = 'center'; font(ctx, 40 * kk, 800); ctx.fillText(String(st[i]), bxx + bw / 2, by + 46 * kk); });
+      if (stb) { var w2 = stb[i] > stb[1 - i], sx = bx + (bw + gap) * 2; ctx.fillStyle = w2 ? C.sun : 'rgba(255,255,255,.16)'; rr(ctx, sx, by, sw2, 62 * kk, 12 * kk); ctx.fill();
+        ctx.fillStyle = w2 ? C.night : '#ffffff'; ctx.textAlign = 'center'; font(ctx, 36 * kk, 800); ctx.fillText(String(stb[i]), sx + sw2 / 2, by + 44 * kk); }
+      yy += hh;
+    });
+    if (meta) { font(ctx, 24 * kk, 500); ctx.fillStyle = 'rgba(255,255,255,.78)'; ctx.textAlign = 'left'; ctx.fillText(meta, px + pad, yy + 34 * kk); }
+    ctx.restore();
+  }
+
   function build(o) {
     var F = FORMATS[o.format] || FORMATS.social, k = F.k, W = F.w, H = F.h, M = 48, cw = W - M * 2;
     var report = { overflow: 0, pages: 0, width: W, height: H };
@@ -1136,25 +1190,16 @@ window.PCPDemoShow = function (which) {
       blocks.push(resultsBlock(scratch, 'Ultimi ' + (o.list.length === 1 ? 'risultato' : o.list.length + ' risultati'), o.list, o.g ? null : function (x) { return (t ? '' : x.t.name + ' · ') + x.g.label; }, cw, k, report));
     } else if (o.scope === 'match') {
       title = t.name + ' · ' + o.g.label;
-      blocks.push(resultsBlock(scratch, 'Risultato finale', [o.x], null, cw, k * 1.8, report)); o.center = true;
-
+      o.matchFrame = true; // l'incontro ha una cornice propria (foto + risultato sovrapposto), non i blocchi bianchi
     } else {
       title = t.name + ' · Fase finale';
       blocks = playoffBlocks(scratch, t, cw, k, report);
     }
-    var headH = 250, footH = 90, titleH = 80 * k, gapB = 26, top0 = headH + 30, hasSp = !!(o.sponsorImgs && o.sponsorImgs.length), maxY = H - footH - (hasSp ? 124 : o.env !== 'PROD' ? 72 : 24);
+    var headH = 250, footH = 84, titleH = 80 * k, gapB = 26, top0 = headH + 30, hasSp = !!(o.sponsorImgs && o.sponsorImgs.length), maxY = H - footH - (hasSp ? 124 : o.env !== 'PROD' && !o.matchFrame ? 72 : 24);
     var pal = (o.catColor !== false && t && CAT[t.id]) || { bg: C.bg, deep: C.deep };
-    if (o.scope === 'match' && o.photo) { // fotografia facoltativa, scelta dall'operatore: resta sul dispositivo, entra solo nell'immagine creata. Alta quanto serve per stare nella stessa pagina del risultato.
-      var resH = titleH + blocks[0].items.reduce(function (a, it) { return a + it.h; }, 0), im = o.photo;
-      var ph = Math.round(Math.max(200, Math.min(F.id === 'story' ? 760 : 520, maxY - top0 - resH - gapB - titleH - 8)));
-      blocks.unshift({ title: 'Foto dell\'incontro', right: '', accent: C.sun, keepTogether: true, items: [{ h: ph, draw: function (ctx, x, y) {
-        var pad = 28 * k, w = cw - pad * 2, hh = ph - pad, sc = Math.max(w / im.naturalWidth, hh / im.naturalHeight), sw = w / sc, sh = hh / sc;
-        ctx.save(); rr(ctx, x + pad, y, w, hh, 22); ctx.clip(); ctx.drawImage(im, (im.naturalWidth - sw) / 2, (im.naturalHeight - sh) / 2, sw, sh, x + pad, y, w, hh); ctx.restore();
-      } }] });
-      o.center = false;
-    }
     var pages = [[]], y = top0;
-    blocks.forEach(function (b) {
+    if (o.matchFrame) pages[0].push({ custom: function (ctx, x, yy, w, hh) { matchFrame(ctx, o, x, yy, w, hh, k, F, pal, report); }, y: top0, h: maxY - top0 });
+    else blocks.forEach(function (b) {
       var i = 0, part = 0;
       var total = titleH + b.items.reduce(function (a, it) { return a + it.h; }, 0);
       if (b.keepTogether && total <= maxY - top0 && y + total > maxY && pages[pages.length - 1].length) { pages.push([]); y = top0; }
@@ -1167,9 +1212,7 @@ window.PCPDemoShow = function (which) {
         if (i < b.items.length) { pages.push([]); y = top0; }
       }
     });
-    if (o.center && pages.length === 1 && pages[0].length === 1) pages[0][0].y = Math.round(top0 + Math.max(0, (maxY - top0 - pages[0][0].h) * 0.36));
     report.pages = pages.length;
-    var stamp = 'Situazione al ' + new Intl.DateTimeFormat('it-IT', { timeZone: 'Europe/Rome', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(o.stamp));
     var canvases = pages.map(function (segs, pi) {
       var cv = document.createElement('canvas'); cv.width = W; cv.height = H;
       var ctx = cv.getContext('2d');
@@ -1191,7 +1234,7 @@ window.PCPDemoShow = function (which) {
       font(ctx, tl.size, 800); ctx.fillStyle = '#ffffff';
       tl.lines.slice(0, 2).forEach(function (l, i) { ctx.fillText(l, tx, (tl.lines.length > 1 ? 138 : 158) + i * tl.size * 1.08); });
       if (o.kicker) { ctx.fillStyle = '#b8cee2'; font(ctx, 26, 500); ctx.fillText(o.kicker, tx, tl.lines.length > 1 ? 138 + tl.size * 1.08 + 38 : 200); }
-      if (o.env !== 'PROD') {
+      if (o.env !== 'PROD' && !o.matchFrame) {
         font(ctx, 22, 800); var tw = ctx.measureText('TEST · dati di prova').width + 30;
         ctx.fillStyle = C.sun; rr(ctx, W - M - tw, H - footH - 58, tw, 40, 20); ctx.fill();
         ctx.fillStyle = C.night; ctx.textAlign = 'left'; ctx.fillText('TEST · dati di prova', W - M - tw + 15, H - footH - 30);
@@ -1199,6 +1242,7 @@ window.PCPDemoShow = function (which) {
       [[C.terra, 0, 0.58], [C.sun, 0.58, 0.76], [C.skyl, 0.76, 0.88], [C.sky, 0.88, 1]].forEach(function (st) { ctx.fillStyle = st[0]; ctx.fillRect(W * st[1], headH - 8, W * (st[2] - st[1]) + 1, 8); });
       // blocchi
       segs.forEach(function (sg) {
+        if (sg.custom) { sg.custom(ctx, M, sg.y, cw, sg.h); return; }
         ctx.fillStyle = C.card; rr(ctx, M, sg.y, cw, sg.h, 30); ctx.fill();
         ctx.save(); rr(ctx, M, sg.y, cw, sg.h, 30); ctx.clip();
         ctx.fillStyle = sg.b.accent; rr(ctx, M + 28 * k, sg.y + 26 * k, 10 * k, 34 * k, 5 * k); ctx.fill();
@@ -1214,14 +1258,12 @@ window.PCPDemoShow = function (which) {
         var sy = H - footH - 104, sx = M; ctx.textAlign = 'left'; ctx.fillStyle = 'rgba(255,255,255,.9)'; font(ctx, 22, 700); ctx.fillText('Partner', sx, sy + 50); sx += ctx.measureText('Partner').width + 18;
         o.sponsorImgs.slice(0, 3).forEach(function (sim) { var lh = 60, lw = Math.min(230, lh * sim.naturalWidth / sim.naturalHeight); ctx.fillStyle = '#ffffff'; rr(ctx, sx, sy + 6, lw + 24, lh + 16, 16); ctx.fill(); ctx.drawImage(sim, sx + 12, sy + 14, lw, lh); sx += lw + 38; });
       }
-      // piè di pagina
+      // piè di pagina: club a sinistra, Instagram a destra (nessuna data né ora); numero pagina al centro solo se le immagini sono più d'una
       ctx.fillStyle = pal.deep; ctx.fillRect(0, H - footH, W, footH);
-      ctx.fillStyle = '#ffffff'; ctx.textAlign = 'left'; font(ctx, 25, 700); ctx.fillText(stamp, M, H - footH + 38);
-      font(ctx, 22, 400); ctx.fillStyle = 'rgba(255,255,255,.88)';
-      ctx.fillText(o.env !== 'PROD' ? 'Ambiente di prova: dati non ufficiali' : U.BRAND.club, M, H - footH + 70);
-      ctx.textAlign = 'right';
-      if (U.BRAND.handle) { font(ctx, 22, 600); ctx.fillText('Instagram ' + U.BRAND.handle, W - M, H - footH + (pages.length > 1 ? 70 : 54)); }
-      if (pages.length > 1) { font(ctx, 27, 800); ctx.fillStyle = '#ffffff'; ctx.fillText((pi + 1) + ' / ' + pages.length, W - M, H - footH + 38); }
+      var fy = H - footH / 2 + 8;
+      ctx.fillStyle = '#ffffff'; ctx.textAlign = 'left'; font(ctx, 27, 700); ctx.fillText(U.BRAND.club, M, fy);
+      ctx.textAlign = 'right'; font(ctx, 25, 600); if (U.BRAND.handle) ctx.fillText('Instagram ' + U.BRAND.handle, W - M, fy);
+      if (pages.length > 1) { ctx.textAlign = 'center'; font(ctx, 27, 800); ctx.fillText((pi + 1) + ' / ' + pages.length, W / 2, fy); }
       return cv;
     });
     return { canvases: canvases, report: report, format: F };
