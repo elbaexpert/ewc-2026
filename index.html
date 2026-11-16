@@ -1118,6 +1118,19 @@ window.PCPDemoShow = function (which) {
   }
 
   /* ---------- Impaginazione ---------- */
+  /** Colore della targa dietro al logo: se il logo ha uno sfondo proprio (es. blu) la targa lo continua dai bordi; se è trasparente o i bordi sono vari, bianco. */
+  function plateColor(im) {
+    try {
+      var w = 48, h = Math.max(8, Math.round(48 * im.naturalHeight / im.naturalWidth)), c = document.createElement('canvas'); c.width = w; c.height = h;
+      var x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(im, 0, 0, w, h); var d = x.getImageData(0, 0, w, h).data, n = 0, tot = 0, r = 0, g = 0, b = 0, px = [];
+      for (var yy = 0; yy < h; yy++) for (var xx = 0; xx < w; xx++) { if (yy > 1 && yy < h - 2 && xx > 1 && xx < w - 2) continue; var i = (yy * w + xx) * 4; tot++; if (d[i + 3] > 200) { n++; r += d[i]; g += d[i + 1]; b += d[i + 2]; px.push([d[i], d[i + 1], d[i + 2]]); } }
+      if (!n || n < tot * 0.8) return '#ffffff';
+      r /= n; g /= n; b /= n; var dev = 0; px.forEach(function (q) { dev = Math.max(dev, Math.abs(q[0] - r) + Math.abs(q[1] - g) + Math.abs(q[2] - b)); });
+      if (dev > 90) return '#ffffff';
+      var hx = function (v) { return ('0' + Math.round(v).toString(16)).slice(-2); }; return '#' + hx(r) + hx(g) + hx(b);
+    } catch (e) { return '#ffffff'; }
+  }
+
   /**
    * Story / immagine dell'incontro. Il PNG ha un'apertura REALMENTE trasparente: la foto (facoltativa, solo sul dispositivo) viene disegnata prima e la cornice sopra,
    * così resta dietro. Senza foto l'apertura resta trasparente (alfa 0). Sotto l'apertura: risultato; poi, solo se scelto, lo sponsor dell'area Sponsor esistente.
@@ -1134,11 +1147,15 @@ window.PCPDemoShow = function (which) {
     var rowA = Math.max(92, na.lines.length * na.size * 1.2 + 26), rowB = Math.max(92, nb.lines.length * nb.size * 1.2 + 26);
     var pts = g.official && m.ptsA != null ? 'Punti assegnati  ' + m.ptsA + (m.pendingA ? '*' : '') + ' – ' + m.ptsB + (m.pendingB ? '*' : '') : '';
     var ref = [m.id, m.playedOn ? 'giocato ' + U.day(m.playedOn) : null].filter(Boolean).join('  ·  ');
-    var panH = 26 + 46 + rowA + rowB + (pts ? 56 : 22), spImgs = (o.sponsorImgs || []).slice(0, 2), spLogoH = 0, spPlateW = spImgs.length === 2 ? (cw - 20) / 2 : cw, spFit = [];
+    var so = o.sponsorOpt || {}, big = !!so.big, top = so.pos === 'top';
+    var panH = 26 + 46 + rowA + rowB + (pts ? 56 : 22), spImgs = (o.sponsorImgs || []).slice(0, 2), spLogoH = 0, spPlateW = spImgs.length === 2 ? (cw - 20) / 2 : cw, spFit = [], spBg = [];
     // sponsor: uno occupa tutta la larghezza, due la dividono a metà; ogni logo resta nelle sue proporzioni
-    spImgs.forEach(function (im) { var r = im.naturalWidth / im.naturalHeight, lw = Math.min(spPlateW - 48, (spImgs.length === 2 ? 100 : 120) * r), lh = lw / r; spFit.push([lw, lh]); spLogoH = Math.max(spLogoH, lh); });
+    spImgs.forEach(function (im) { var r = im.naturalWidth / im.naturalHeight, mh = (spImgs.length === 2 ? 100 : 120) * (big ? 1.5 : 1), lw = Math.min(spPlateW - 48, mh * r), lh = lw / r; spFit.push([lw, lh]); spBg.push(plateColor(im)); spLogoH = Math.max(spLogoH, lh); });
     var spH = spImgs.length ? Math.round(spLogoH + 40) : 0;
-    var panY = H - footH - gap - spH - (spH ? gap - 8 : 0) - panH, apX = M, apY = headH + 24, apW = cw, apH = panY - gap - apY;
+    var panY, apX = M, apY, apW = cw, apH, spY = 0;
+    if (top) { spY = headH + 24; apY = spY + spH + (spH ? gap - 8 : 0); panY = H - footH - gap - panH; }
+    else { panY = H - footH - gap - spH - (spH ? gap - 8 : 0) - panH; apY = headH + 24; spY = panY + panH + gap - 8; }
+    apH = panY - gap - apY;
     var hole = function () { rr(ctx, apX, apY, apW, apH, R); };
     // 1. fotografia (dietro): riempie l'apertura senza deformarsi; ingrandimento e posizione scelti dall'operatore
     if (o.photo) {
@@ -1185,7 +1202,8 @@ window.PCPDemoShow = function (which) {
     if (pts) { font(ctx, 25, 600); ctx.fillStyle = 'rgba(255,255,255,.8)'; ctx.textAlign = 'left'; ctx.fillText(pts, M + pad, yy + 36); }
     // sponsor (solo se scelto nell'area Sponsor): logo su targa bianca, proporzioni originali; altrimenti nessuna traccia
     spImgs.forEach(function (im, i) {
-      var spy = panY + panH + gap - 8, sx0 = M + i * (spPlateW + 20); ctx.fillStyle = '#ffffff'; rr(ctx, sx0, spy, spPlateW, spH, 24); ctx.fill();
+      var spy = spY, sx0 = M + i * (spPlateW + 20); ctx.fillStyle = spBg[i]; rr(ctx, sx0, spy, spPlateW, spH, 24); ctx.fill();
+      if (so.ring) { ctx.save(); ctx.lineWidth = 8; ctx.strokeStyle = C.sun || '#F2B705'; rr(ctx, sx0 + 4, spy + 4, spPlateW - 8, spH - 8, 20); ctx.stroke(); ctx.restore(); }
       ctx.drawImage(im, sx0 + (spPlateW - spFit[i][0]) / 2, spy + (spH - spFit[i][1]) / 2, spFit[i][0], spFit[i][1]);
     });
     // piè di pagina: club a sinistra, Instagram a destra
@@ -1592,14 +1610,14 @@ window.PCPDemoShow = function (which) {
     var isMatch = spec.o.scope === 'match', spItems = (S.snap.sponsors && S.snap.sponsors.items) || [];
     if (!S.exp || S.exp.key !== key) {
       var def = isMatch ? U.sponsorOf(S.snap, spec.o.x && spec.o.x.m ? spec.o.x.m.id : null) : null;
-      releaseExp(); S.exp = { key: key, format: isMatch ? 'story' : 'social', res: null, msg: null, working: false, sp: def ? def.id : '', sp2: '', photo: null, zoom: 1, px: 0.5, py: 0.5 };
+      releaseExp(); S.exp = { key: key, format: isMatch ? 'story' : 'social', res: null, msg: null, working: false, sp: def ? def.id : '', sp2: '', spPos: 'bottom', spBig: false, spRing: false, photo: null, zoom: 1, px: 0.5, py: 0.5 };
     }
     var E = S.exp, X = root.PCPExport;
-    var again = function (ch) { var keep = { key: key, format: E.format, res: null, msg: null, working: false, sp: E.sp, sp2: E.sp2, photo: E.photo, zoom: E.zoom, px: E.px, py: E.py }; Object.keys(ch).forEach(function (k2) { keep[k2] = ch[k2]; }); if (E.res) E.res.images.forEach(function (im) { URL.revokeObjectURL(im.url); }); S.exp = keep; render(); };
+    var again = function (ch) { var keep = { key: key, format: E.format, res: null, msg: null, working: false, sp: E.sp, sp2: E.sp2, spPos: E.spPos, spBig: E.spBig, spRing: E.spRing, photo: E.photo, zoom: E.zoom, px: E.px, py: E.py }; Object.keys(ch).forEach(function (k2) { keep[k2] = ch[k2]; }); if (E.res) E.res.images.forEach(function (im) { URL.revokeObjectURL(im.url); }); S.exp = keep; render(); };
     var spSel = [E.sp, E.sp2].filter(function (id, i, a) { return id && a.indexOf(id) === i; }).map(function (id) { return spItems.filter(function (x) { return x.id === id; })[0]; }).filter(Boolean);
     if (!E.res && !E.working) {
       E.working = true;
-      X.render(Object.assign({ env: S.snap.meta.env, stamp: S.fetchedAt || new Date().toISOString(), format: E.format, sponsors: spSel, photoUrl: isMatch ? E.photo : null, photoView: { zoom: E.zoom, x: E.px, y: E.py } }, spec.o))
+      X.render(Object.assign({ env: S.snap.meta.env, stamp: S.fetchedAt || new Date().toISOString(), format: E.format, sponsors: spSel, sponsorOpt: { pos: E.spPos, big: !!E.spBig, ring: !!E.spRing }, photoUrl: isMatch ? E.photo : null, photoView: { zoom: E.zoom, x: E.px, y: E.py } }, spec.o))
         .then(function (res) { E.res = res; E.working = false; if (S.exp === E) render(); })
         .catch(function () { E.working = false; E.msg = 'Non è stato possibile creare le immagini su questo dispositivo.'; if (S.exp === E) render(); });
     }
@@ -1618,7 +1636,12 @@ window.PCPDemoShow = function (which) {
       spItems.length ? h('div', { class: 'card' }, h('label', { class: 'f', for: 'exp-sp' }, 'Sponsor / partner nell\'immagine (facoltativo)'),
         (function () { var sel = h('select', { class: 'in', id: 'exp-sp', onchange: function () { again({ sp: sel.value }); } }, [h('option', { value: '' }, 'Nessun logo')].concat(spItems.map(function (x) { return h('option', { value: x.id }, x.name + (x.main ? ' (principale)' : '')); }))); sel.value = E.sp || ''; return sel; })(),
         isMatch && spItems.length > 1 && E.sp ? [h('label', { class: 'f', for: 'exp-sp2' }, 'Secondo sponsor (facoltativo: i due loghi si dividono la larghezza)'),
-          (function () { var s2 = h('select', { class: 'in', id: 'exp-sp2', onchange: function () { again({ sp2: s2.value }); } }, [h('option', { value: '' }, 'Nessun secondo logo')].concat(spItems.filter(function (x) { return x.id !== E.sp; }).map(function (x) { return h('option', { value: x.id }, x.name); }))); s2.value = E.sp2 || ''; return s2; })()] : null) : null,
+          (function () { var s2 = h('select', { class: 'in', id: 'exp-sp2', onchange: function () { again({ sp2: s2.value }); } }, [h('option', { value: '' }, 'Nessun secondo logo')].concat(spItems.filter(function (x) { return x.id !== E.sp; }).map(function (x) { return h('option', { value: x.id }, x.name); }))); s2.value = E.sp2 || ''; return s2; })()] : null,
+        isMatch && E.sp ? [h('label', { class: 'f', for: 'exp-pos' }, 'Posizione dello sponsor'),
+          (function () { var sp = h('select', { class: 'in', id: 'exp-pos', onchange: function () { again({ spPos: sp.value }); } }, [h('option', { value: 'bottom' }, 'In basso, sotto il risultato'), h('option', { value: 'top' }, 'In alto, sopra la foto')]); sp.value = E.spPos || 'bottom'; return sp; })(),
+          h('label', { class: 'perm', for: 'exp-big' }, h('input', { type: 'checkbox', id: 'exp-big', checked: !!E.spBig, onchange: function (ev) { again({ spBig: ev.target.checked }); } }), h('span', null, 'Logo più grande')),
+          h('label', { class: 'perm', for: 'exp-ring' }, h('input', { type: 'checkbox', id: 'exp-ring', checked: !!E.spRing, onchange: function (ev) { again({ spRing: ev.target.checked }); } }), h('span', null, 'Evidenzia con cornice dorata')),
+          h('p', { class: 'sub' }, 'Lo sfondo dietro al logo si adatta da solo: se il logo ha il suo sfondo (es. blu) viene continuato, altrimenti è bianco.')] : null) : null,
       isMatch ? h('div', { class: 'card' }, h('label', { class: 'f', for: 'exp-ph' }, 'Fotografia dell\'incontro (facoltativa)'),
         h('input', { class: 'in', id: 'exp-ph', type: 'file', accept: 'image/*', onchange: function (ev) { var f = ev.target.files && ev.target.files[0]; if (!f) return; if (E.photo) URL.revokeObjectURL(E.photo); again({ photo: URL.createObjectURL(f), zoom: 1, px: 0.5, py: 0.5 }); } }),
         h('p', { class: 'sub' }, 'La foto resta sul tuo dispositivo, non viene inviata a nessuno: entra solo nell\'immagine che crei qui. Senza foto l\'apertura resta trasparente. Condividila soltanto se le persone ritratte sono d\'accordo.'),
@@ -1693,11 +1716,16 @@ window.PCPDemoShow = function (which) {
   function notFound(msg) { return [h('div', { class: 'note err' }, msg), h('a', { class: 'btn', href: U.href() }, 'Vai alla Home')]; }
 
   root.addEventListener('hashchange', function () { render(); root.scrollTo(0, 0); app.focus({ preventScroll: true }); });
-  document.addEventListener('visibilitychange', check);
-  setInterval(check, 60000);
+  // meno chiamate al server: controllo ogni ~2 minuti (con scarto casuale), solo a pagina visibile; al ritorno sulla pagina solo se l'ultimo controllo ha più di 30 secondi
+  var lastCheck = Date.now();
+  var checkT = function () { lastCheck = Date.now(); check(); };
+  document.addEventListener('visibilitychange', function () { if (!document.hidden && Date.now() - lastCheck > 30000) checkT(); });
+  (function tick() { setTimeout(function () { checkT(); tick(); }, 120000 + Math.floor(Math.random() * 30000)); })();
   if (root.PCP_BOOT && root.PCP_BOOT.snapshot) { S.snap = root.PCP_BOOT.snapshot; S.fetchedAt = new Date().toISOString(); }
+  // apertura immediata: se il telefono ha già una copia dei dati, la mostra subito e si aggiorna in silenzio
+  if (!S.snap) { var c0 = cacheGet(); if (c0 && c0.snap && c0.snap.meta && c0.snap.meta.schemaVersion >= 2) { S.snap = c0.snap; S.fetchedAt = c0.at; S.cached = true; } }
   render();
-  if (!S.snap) load(false);
+  if (!S.snap || S.cached) load(S.cached);
   root.PCPPublic = { refresh: function () { load(true); }, rechrome: renderChrome, state: S };
 })(window);
 
