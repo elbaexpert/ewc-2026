@@ -1134,8 +1134,9 @@ window.PCPDemoShow = function (which) {
     var rowA = Math.max(92, na.lines.length * na.size * 1.2 + 26), rowB = Math.max(92, nb.lines.length * nb.size * 1.2 + 26);
     var pts = g.official && m.ptsA != null ? 'Punti assegnati  ' + m.ptsA + (m.pendingA ? '*' : '') + ' – ' + m.ptsB + (m.pendingB ? '*' : '') : '';
     var ref = [m.id, m.playedOn ? 'giocato ' + U.day(m.playedOn) : null].filter(Boolean).join('  ·  ');
-    var panH = 26 + 46 + rowA + rowB + (pts ? 56 : 22), spImgs = (o.sponsorImgs || []).slice(0, 1), spLogoH = 0, spLogoW = 0;
-    if (spImgs.length) { var spR = spImgs[0].naturalWidth / spImgs[0].naturalHeight; spLogoW = Math.min(cw - 64, 120 * spR); spLogoH = spLogoW / spR; }
+    var panH = 26 + 46 + rowA + rowB + (pts ? 56 : 22), spImgs = (o.sponsorImgs || []).slice(0, 2), spLogoH = 0, spPlateW = spImgs.length === 2 ? (cw - 20) / 2 : cw, spFit = [];
+    // sponsor: uno occupa tutta la larghezza, due la dividono a metà; ogni logo resta nelle sue proporzioni
+    spImgs.forEach(function (im) { var r = im.naturalWidth / im.naturalHeight, lw = Math.min(spPlateW - 48, (spImgs.length === 2 ? 100 : 120) * r), lh = lw / r; spFit.push([lw, lh]); spLogoH = Math.max(spLogoH, lh); });
     var spH = spImgs.length ? Math.round(spLogoH + 40) : 0;
     var panY = H - footH - gap - spH - (spH ? gap - 8 : 0) - panH, apX = M, apY = headH + 24, apW = cw, apH = panY - gap - apY;
     var hole = function () { rr(ctx, apX, apY, apW, apH, R); };
@@ -1183,10 +1184,10 @@ window.PCPDemoShow = function (which) {
     });
     if (pts) { font(ctx, 25, 600); ctx.fillStyle = 'rgba(255,255,255,.8)'; ctx.textAlign = 'left'; ctx.fillText(pts, M + pad, yy + 36); }
     // sponsor (solo se scelto nell'area Sponsor): logo su targa bianca, proporzioni originali; altrimenti nessuna traccia
-    if (spImgs.length) {
-      var spy = panY + panH + gap - 8; ctx.fillStyle = '#ffffff'; rr(ctx, M, spy, cw, spH, 24); ctx.fill();
-      ctx.drawImage(spImgs[0], M + (cw - spLogoW) / 2, spy + 20, spLogoW, spLogoH);
-    }
+    spImgs.forEach(function (im, i) {
+      var spy = panY + panH + gap - 8, sx0 = M + i * (spPlateW + 20); ctx.fillStyle = '#ffffff'; rr(ctx, sx0, spy, spPlateW, spH, 24); ctx.fill();
+      ctx.drawImage(im, sx0 + (spPlateW - spFit[i][0]) / 2, spy + (spH - spFit[i][1]) / 2, spFit[i][0], spFit[i][1]);
+    });
     // piè di pagina: club a sinistra, Instagram a destra
     ctx.fillStyle = pal.deep; ctx.fillRect(0, H - footH, W, footH);
     var fy = H - footH / 2 + 8; ctx.fillStyle = '#ffffff'; ctx.textAlign = 'left'; font(ctx, 27, 700); ctx.fillText(U.BRAND.club, M, fy);
@@ -1591,11 +1592,11 @@ window.PCPDemoShow = function (which) {
     var isMatch = spec.o.scope === 'match', spItems = (S.snap.sponsors && S.snap.sponsors.items) || [];
     if (!S.exp || S.exp.key !== key) {
       var def = isMatch ? U.sponsorOf(S.snap, spec.o.x && spec.o.x.m ? spec.o.x.m.id : null) : null;
-      releaseExp(); S.exp = { key: key, format: isMatch ? 'story' : 'social', res: null, msg: null, working: false, sp: def ? def.id : '', photo: null, zoom: 1, px: 0.5, py: 0.5 };
+      releaseExp(); S.exp = { key: key, format: isMatch ? 'story' : 'social', res: null, msg: null, working: false, sp: def ? def.id : '', sp2: '', photo: null, zoom: 1, px: 0.5, py: 0.5 };
     }
     var E = S.exp, X = root.PCPExport;
-    var again = function (ch) { var keep = { key: key, format: E.format, res: null, msg: null, working: false, sp: E.sp, photo: E.photo, zoom: E.zoom, px: E.px, py: E.py }; Object.keys(ch).forEach(function (k2) { keep[k2] = ch[k2]; }); if (E.res) E.res.images.forEach(function (im) { URL.revokeObjectURL(im.url); }); S.exp = keep; render(); };
-    var spSel = spItems.filter(function (x) { return x.id === E.sp; });
+    var again = function (ch) { var keep = { key: key, format: E.format, res: null, msg: null, working: false, sp: E.sp, sp2: E.sp2, photo: E.photo, zoom: E.zoom, px: E.px, py: E.py }; Object.keys(ch).forEach(function (k2) { keep[k2] = ch[k2]; }); if (E.res) E.res.images.forEach(function (im) { URL.revokeObjectURL(im.url); }); S.exp = keep; render(); };
+    var spSel = [E.sp, E.sp2].filter(function (id, i, a) { return id && a.indexOf(id) === i; }).map(function (id) { return spItems.filter(function (x) { return x.id === id; })[0]; }).filter(Boolean);
     if (!E.res && !E.working) {
       E.working = true;
       X.render(Object.assign({ env: S.snap.meta.env, stamp: S.fetchedAt || new Date().toISOString(), format: E.format, sponsors: spSel, photoUrl: isMatch ? E.photo : null, photoView: { zoom: E.zoom, x: E.px, y: E.py } }, spec.o))
@@ -1615,7 +1616,9 @@ window.PCPDemoShow = function (which) {
           h('strong', null, f.label), h('span', { class: 'sub' }, f.w + '×' + f.h));
       })),
       spItems.length ? h('div', { class: 'card' }, h('label', { class: 'f', for: 'exp-sp' }, 'Sponsor / partner nell\'immagine (facoltativo)'),
-        (function () { var sel = h('select', { class: 'in', id: 'exp-sp', onchange: function () { again({ sp: sel.value }); } }, [h('option', { value: '' }, 'Nessun logo')].concat(spItems.map(function (x) { return h('option', { value: x.id }, x.name + (x.main ? ' (principale)' : '')); }))); sel.value = E.sp || ''; return sel; })()) : null,
+        (function () { var sel = h('select', { class: 'in', id: 'exp-sp', onchange: function () { again({ sp: sel.value }); } }, [h('option', { value: '' }, 'Nessun logo')].concat(spItems.map(function (x) { return h('option', { value: x.id }, x.name + (x.main ? ' (principale)' : '')); }))); sel.value = E.sp || ''; return sel; })(),
+        isMatch && spItems.length > 1 && E.sp ? [h('label', { class: 'f', for: 'exp-sp2' }, 'Secondo sponsor (facoltativo: i due loghi si dividono la larghezza)'),
+          (function () { var s2 = h('select', { class: 'in', id: 'exp-sp2', onchange: function () { again({ sp2: s2.value }); } }, [h('option', { value: '' }, 'Nessun secondo logo')].concat(spItems.filter(function (x) { return x.id !== E.sp; }).map(function (x) { return h('option', { value: x.id }, x.name); }))); s2.value = E.sp2 || ''; return s2; })()] : null) : null,
       isMatch ? h('div', { class: 'card' }, h('label', { class: 'f', for: 'exp-ph' }, 'Fotografia dell\'incontro (facoltativa)'),
         h('input', { class: 'in', id: 'exp-ph', type: 'file', accept: 'image/*', onchange: function (ev) { var f = ev.target.files && ev.target.files[0]; if (!f) return; if (E.photo) URL.revokeObjectURL(E.photo); again({ photo: URL.createObjectURL(f), zoom: 1, px: 0.5, py: 0.5 }); } }),
         h('p', { class: 'sub' }, 'La foto resta sul tuo dispositivo, non viene inviata a nessuno: entra solo nell\'immagine che crei qui. Senza foto l\'apertura resta trasparente. Condividila soltanto se le persone ritratte sono d\'accordo.'),
