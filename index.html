@@ -397,6 +397,36 @@ html.ovl-open { overflow: hidden; }
 .savedbox .btnrow { grid-template-columns: 1fr; }
 @media (min-width: 520px) { .savedbox .btnrow { grid-template-columns: repeat(3, 1fr); } }
 
+/* inserimento rapido */
+.qrow { margin: 8px 0 10px; } .qn { font-weight: 700; margin-bottom: 5px; }
+.qgrid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; } .qgrid.ten { grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.qgrid .opt { min-height: 48px; padding: 2px; font: 800 17px/1 var(--display); border-radius: 12px; }
+.opt.tl { display: flex; flex-direction: column; align-items: flex-start; text-align: left; min-height: 56px; gap: 2px; margin-bottom: 6px; } .opt.tl .sm { font-size: 13px; font-weight: 500; opacity: .75; }
+.menu.tight { display: block; } .qdate { margin: 8px 0; } .qdate summary { cursor: pointer; font-size: 14px; color: var(--muted); padding: 8px 0; min-height: 44px; display: flex; align-items: center; }
+
+/* ============ 13. COMPATTEZZA SPORTIVA (sprint UX 16/11) ============
+ * Meno cornici e ombre, bordi sottili, spazi verticali ridotti; bersagli tattili sempre ≥ 44 px. */
+:root { --r-l: 14px; --r-m: 10px; --tap: 44px;
+  --e1: 0 1px 2px rgba(5,56,99,.06), 0 4px 10px -8px rgba(5,56,99,.25); --e2: 0 8px 20px -12px rgba(4,42,75,.45); }
+.top { min-height: 56px; padding: 4px 10px 7px; gap: 8px; }
+.hlogo img { height: 42px; } .hlogo, .hbtn { min-height: 44px; min-width: 44px; }
+.httl .title { font-size: 16px; }
+.wrap { padding: 10px 12px 96px; }
+.card { padding: 12px; margin: 0 0 10px; box-shadow: var(--e1); }
+.card h2 { font-size: 16px; }
+.btn { min-height: 48px; padding: 8px 14px; font-size: 16px; border-width: 1.5px; }
+.chip { min-height: 44px; padding: 4px 14px; border-width: 1px; }
+.chip.ic { min-height: 50px; }
+.opt { min-height: 50px; border-width: 1px; border-color: #b4c2cf; padding: 5px 8px; }
+.opt.tl { min-height: 52px; margin-bottom: 5px; }
+.tiles { gap: 8px; } .tile { min-height: 78px; padding: 10px; box-shadow: var(--e1); }
+.tile .tn { font-size: 17px; } .tiles.small .tile { min-height: 60px; }
+.hero { padding: 12px 14px 10px; margin-bottom: 10px; box-shadow: var(--e2); } .hero-n { font-size: 30px; }
+.menu { gap: 6px; } .menu .mitem { font-size: 16px; min-height: 48px; }
+.bitem { min-height: 48px; }
+.bitem.main { box-shadow: 0 4px 10px -6px rgba(178,84,51,.7); }
+.qgrid .opt { min-height: 44px; }
+
 </style>
 </head>
 <body>
@@ -1845,7 +1875,43 @@ window.PCPDemoShow = function (which) {
   function playoffMatches(t) { var out = []; (t.playoff.rounds || []).forEach(function (r) { r.matches.forEach(function (m) { out.push(m); }); }); return out; }
 
   /* ---------- Inserisci (Club/Owner) o Proponi (giocatore): torneo → girone → [coppia] → incontro ---------- */
+  /** Incontri registrabili di un torneo: gironi ancora da giocare + fase finale pronta (ID reali, nessun abbinamento inventato). */
+  function pendingOf(t) {
+    var out = [];
+    t.groups.forEach(function (g) { g.matches.forEach(function (m) { if (m.state === 'DA_GIOCARE' && m.status !== 'PROPOSTO' && m.status !== 'SOSPESO' && m.a.name && m.b.name) out.push({ m: m, g: g }); }); });
+    playoffMatches(t).forEach(function (m) { if (m.state === 'PRONTO' && m.status !== 'PROPOSTO' && m.a && m.b && m.a.name && m.b.name) out.push({ m: m, g: null }); });
+    return out;
+  }
+  /** Inserimento ufficiale: torneo → prima coppia → avversaria (solo con incontro da giocare) → punteggio. Con una sola avversaria si va direttamente al punteggio. */
+  function viewPickOfficial() {
+    var t = tour(A.selT) || A.data.tournaments[0]; A.selT = t.id;
+    var pend = pendingOf(t), teams = {}, label = A.view.q || '';
+    pend.forEach(function (x) { [x.m.a, x.m.b].forEach(function (tm) { var e = teams[tm.id] || (teams[tm.id] = { id: tm.id, name: tm.name, n: 0, where: x.g ? x.g.label : 'Fase finale' }); e.n++; if (!x.g) e.where = 'Fase finale'; }); });
+    var list = Object.keys(teams).map(function (k) { return teams[k]; }).sort(function (a, b) { return a.name.localeCompare(b.name, 'it'); });
+    if (!teams[A.selTeam]) A.selTeam = null;
+    var q = label.trim().toLowerCase(), shown = q ? list.filter(function (e) { return e.name.toLowerCase().indexOf(q) >= 0; }) : list;
+    var opp = A.selTeam ? pend.filter(function (x) { return x.m.a.id === A.selTeam || x.m.b.id === A.selTeam; }) : [];
+    var open = function (m) { go({ name: 'quick', matchId: m.id }); };
+    var search = list.length > 8 ? h('input', { class: 'in', id: 'qf', type: 'search', placeholder: 'Cerca la coppia…', value: label, 'aria-label': 'Cerca la coppia', autocomplete: 'off',
+      oninput: function (ev) { A.view.q = ev.target.value; var pos = ev.target.selectionStart; render(); var el = document.getElementById('qf'); if (el) { el.focus(); try { el.setSelectionRange(pos, pos); } catch (e) {} } } }) : null;
+    return [h('h1', { class: 'h1' }, 'Inserisci risultato'), roleBar(), flash(), errBox(A.view.error),
+      selTournament(false),
+      !t.official ? h('div', { class: 'note warn' }, 'Regolamento ' + t.name + ' da confermare: il risultato viene registrato, senza punti né classifica ufficiale.') : null,
+      !list.length ? h('div', { class: 'card empty' }, 'In ' + t.name + ' non ci sono incontri da giocare. Per correggere un risultato vai in Gestione → Incontri.') : [
+        h('div', { class: 'step' }, 'Prima coppia'), search,
+        shown.length ? h('div', { class: 'menu tight' }, shown.map(function (e) {
+          return h('button', { class: 'opt tl', type: 'button', 'aria-pressed': A.selTeam === e.id ? 'true' : 'false', onclick: function () {
+            A.selTeam = e.id; var o = pend.filter(function (x) { return x.m.a.id === e.id || x.m.b.id === e.id; });
+            if (o.length === 1) return open(o[0].m); render(); var n = document.getElementById('opp'); if (n && n.scrollIntoView) n.scrollIntoView({ behavior: 'smooth', block: 'start' }); } },
+            U.team(e.name), h('span', { class: 'sm' }, e.where + ' · ' + e.n + (e.n === 1 ? ' da giocare' : ' da giocare')));
+        })) : h('div', { class: 'card empty' }, 'Nessuna coppia trovata.'),
+        A.selTeam ? h('div', { id: 'opp' }, h('div', { class: 'step' }, 'Contro chi?'), h('section', { class: 'card flush' }, opp.map(function (x) {
+          var m = x.m, other = m.a.id === A.selTeam ? m.b : m.a;
+          return h('button', { class: 'mitem', type: 'button', onclick: function () { open(m); } }, U.team(other.name), h('div', { class: 'st2' }, (x.g ? x.g.label : 'Fase finale') + (m.round ? ' · ' + m.round : '') + (m.plannedOn ? ' · ' + U.day(m.plannedOn) : '')));
+        }))) : null]];
+  }
   function viewPick() {
+    if (A.mode !== 'proposal') return viewPickOfficial();
     var prop = A.mode === 'proposal', t = ensureSel(), g = curGroup(), todo, teamStep = null;
     if (g) {
       todo = g.matches.filter(function (m) { return m.state === 'DA_GIOCARE' && m.status !== 'PROPOSTO' && m.status !== 'SOSPESO'; });
@@ -1872,7 +1938,70 @@ window.PCPDemoShow = function (which) {
       !prop && pendingHere && can('proposals.review') ? h('div', { class: 'note warn' }, pendingHere + ' incontri di questo girone hanno una proposta in attesa: esaminala in Gestione → Proposte.') : null];
   }
 
-  /* ---------- Inserimento guidato ---------- */
+
+  /* ---------- Inserimento rapido: un tocco per set (vincitrice e punteggio insieme) e salvataggio nella stessa schermata ---------- */
+  function viewQuick() {
+    var x = findMatch(A.view.matchId), m = x.m, V = A.view;
+    if (m.version > 0 || m.state === 'GIOCATO') return viewWizard();
+    if (!V.w) { V.w = initWizard(m); V.key = uuid(); }
+    var w = V.w, score = wizardScore(w), sig = score ? JSON.stringify([score, w.on, w.time]) : '';
+    var nextCard = function () { var c = app.querySelector('section.card[data-done="0"]') || app.querySelector('.qsave'); if (c && c.scrollIntoView) c.scrollIntoView({ behavior: 'smooth', block: 'center' }); };
+    var chip = function (label, on, fn) { return h('button', { class: 'opt', type: 'button', 'aria-pressed': on ? 'true' : 'false', onclick: function () { fn(); V.error = null; render(); nextCard(); } }, label); };
+    var rows = function (get, set, labels) {
+      return [['A', m.a.name], ['B', m.b.name]].map(function (r) {
+        return h('div', { class: 'qrow' }, h('div', { class: 'qn' }, U.team(r[1])),
+          h('div', { class: 'qgrid' + (labels.length === 10 ? ' ten' : '') }, labels.map(function (sc) { var cur = get(); return chip(sc, cur.w === r[0] && cur.sc === sc, function () { set(r[0], sc); }); })));
+      });
+    };
+    var setBlock = function (i) {
+      var s = w.sets[i];
+      return h('section', { class: 'card', 'data-done': s.w && s.sc ? '1' : '0' }, h('div', { class: 'step' }, (i + 1) + '° set'), h('p', { class: 'sub' }, 'Tocca il punteggio della coppia che ha vinto il set.'),
+        rows(function () { return s; }, function (who, sc) { s.w = who; s.sc = sc; }, SETS));
+    };
+    var setsDone = w.sets[0].w && w.sets[0].sc && w.sets[1].w && w.sets[1].sc, split = setsDone && w.sets[0].w !== w.sets[1].w, stbBlock = null;
+    if (split) {
+      var b = w.stb, labels = []; for (var n = 0; n <= 9; n++) labels.push('10-' + n);
+      stbBlock = h('section', { class: 'card', 'data-done': score ? '1' : '0' }, h('div', { class: 'step' }, 'Super tie-break'),
+        h('p', { class: 'sub' }, 'Un set pari: si decide al super tie-break a 10 punti (non conta nei game).'),
+        rows(function () { return { w: b.over ? null : b.w, sc: b.over ? null : (b.l == null ? null : '10-' + b.l) }; }, function (who, sc) { b.over = false; b.w = who; b.l = Number(sc.split('-')[1]); }, labels),
+        h('div', { class: 'btnrow' }, chip('Oltre il 10 (11-9, 12-10…)', b.over, function () { b.over = !b.over; b.l = null; })),
+        b.over ? [h('div', { class: 'qrow' }, h('div', { class: 'qn' }, 'Chi ha vinto'), h('div', { class: 'pick' }, [['A', m.a.name], ['B', m.b.name]].map(function (r) { return chip(U.team(r[1]), b.w === r[0], function () { b.w = r[0]; }); }))),
+          h('div', { class: 'stepper', role: 'group', 'aria-label': 'Punteggio oltre il 10' },
+            h('button', { type: 'button', 'aria-label': 'Diminuisci', onclick: function () { b.top = Math.max(11, b.top - 1); render(); } }, '−'), h('span', { 'aria-live': 'polite' }, b.top + ' - ' + (b.top - 2)),
+            h('button', { type: 'button', 'aria-label': 'Aumenta', onclick: function () { b.top = Math.min(40, b.top + 1); render(); } }, '+'))] : null);
+    }
+    // controllo automatico del punteggio col regolamento (stessa chiamata di prima, ora senza schermata intermedia)
+    if (score && V.pvSig !== sig) {
+      var sk = JSON.stringify(score); if (V.pvScore !== sk) { V.pv = null; V.pvScore = sk; } /* cambiando solo data/ora il riquadro resta: niente sfarfallio */
+      V.pvSig = sig;
+      call('preview', { matchId: m.id, score: score, playedOn: w.on || null, playedTime: w.time || null }).then(function (pv) { if (A.view === V && V.pvSig === sig) { V.pv = pv; render(); } })
+        .catch(function (e) { if (!fail(e) && A.view === V && V.pvSig === sig) { V.error = e && e.message || 'Controllo non riuscito.'; render(); } });
+    }
+    var pv = score && V.pvScore === JSON.stringify(score) ? V.pv : null;
+    var dOn = input('pon', { type: 'date', value: w.on || null, onchange: function (ev) { w.on = ev.target.value || ''; render(); } }), dTime = input('ptime', { type: 'time', value: w.time || null, onchange: function (ev) { w.time = ev.target.value || ''; render(); } });
+    var cell = function (i) { var st = w.sets[i]; if (!st.w || !st.sc) return null; var p = st.sc.split('-').map(Number); return st.w === 'A' ? [p[0], p[1]] : [p[1], p[0]]; };
+    var s1 = cell(0), s2 = cell(1), tie = s1 && s2 && w.sets[0].w !== w.sets[1].w;
+    var pt = function (pts, pend) { return pts + (pend ? ' (+' + pend + ' da confermare)' : ''); };
+    var save = !score ? h('p', { class: 'sub qsave' }, 'Inserisci il punteggio per salvare.')
+      : !pv ? h('p', { class: 'sub qsave', role: 'status' }, 'Controllo del punteggio…')
+      : !pv.ok ? h('div', { class: 'qsave' }, h('div', { class: 'note err', role: 'alert' }, h('strong', null, 'Punteggio non valido'), pv.errors.map(function (e) { return e.msg; }).join(' ')))
+      : h('section', { class: 'card qsave' }, h('div', { class: 'step' }, 'Controlla e salva'),
+          h('dl', { class: 'kv' }, h('dt', null, 'Vincitrice'), h('dd', null, U.team(pv.winner === 'A' ? pv.nameA : pv.nameB)),
+            h('dt', null, 'Punti classifica'), h('dd', null, pv.phase === 'PLAYOFF' ? 'Fase finale: nessun punto' : pv.official ? pt(pv.ptsA, pv.pendingA) + ' – ' + pt(pv.ptsB, pv.pendingB) : 'Non calcolati')),
+          (pv.warnings || []).map(function (wn) { return h('div', { class: 'note warn' }, wn.msg); }),
+          h('details', { class: 'qdate', open: V.dOpen ? true : null, ontoggle: function (ev) { V.dOpen = ev.target.open; } }, h('summary', null, 'Giocata ' + (w.on ? U.day(w.on) + (w.time ? ', ore ' + w.time : '') : 'data non indicata') + ' · cambia'), h('div', { class: 'two' }, h('div', null, field('pon', 'Giorno', dOn)), h('div', null, field('ptime', 'Ora', dTime)))),
+          h('div', { class: 'btnrow' }, busyBtn('Conferma e salva', '', function () {
+            var body = { matchId: m.id, score: score, idempotencyKey: V.key, playedOn: w.on || null, playedTime: w.time || null, expectedVersion: m.version };
+            return call('result', body).then(refresh).then(function () { go({ name: 'done', matchId: m.id, corr: false }); })
+              .catch(function (e) { if (e && e.code === 'VERSIONE_SUPERATA') return refresh().then(function () { throw e; }); throw e; });
+          })));
+    return [back('Scelta incontro', { name: 'pick' }), h('h1', { class: 'h1' }, 'Inserisci risultato'),
+      h('p', { class: 'sub withic' }, U.tIcon(x.t.id, 20), h('span', null, x.t.name + ' · ' + (x.g ? x.g.label : (m.round || 'Fase finale')))),
+      U.liveCard(m.a.name, m.b.name, [s1, s2], tie ? (score ? score.stb : null) : undefined, score ? (score.stb ? (score.stb[0] > score.stb[1] ? 'A' : 'B') : w.sets[0].w) : null),
+      errBox(V.error), setBlock(0), w.sets[0].w && w.sets[0].sc ? setBlock(1) : null, stbBlock, setsDone ? save : null];
+  }
+
+  /* ---------- Inserimento guidato (correzioni) ---------- */
   function initWizard(m) {
     var w = { sets: [{ w: null, sc: null }, { w: null, sc: null }], stb: { w: null, l: null, over: false, top: 11 }, on: m.playedOn || '', time: m.playedTime || '', code: '' };
     if (!m.playedOn) { var nr = U.nowRome(); w.on = nr.on; w.time = nr.time; } // precompilate con adesso, ora di Portoferraio: si possono cambiare
@@ -2003,7 +2132,7 @@ window.PCPDemoShow = function (which) {
           can('results.write') ? btn('Modifica', 'sec2', function () { A.mode = 'official'; go({ name: 'wizard', matchId: m.id }); }) : null,
           can('results.void') ? btn('Annulla', 'danger', function () { voidOverlay(m); }) : null)),
       x.g.rows ? h('section', { class: 'card flush' }, h('div', { class: 'cardhead' }, h('h2', null, x.g.label), h('span', { class: 'sub' }, x.g.played + ' di ' + x.g.total + ' giocati')), U.standings(x.g, {})) : null,
-      h('div', { class: 'btnrow' }, btn('Inserisci un altro risultato', '', function () { go({ name: 'pick' }); }),
+      h('div', { class: 'btnrow' }, btn('Inserisci un altro risultato', '', function () { A.selTeam = null; go({ name: 'pick' }); }),
         h('a', { class: 'btn sec2', href: PUB + U.matchHref(m.id), onclick: toPublic }, 'Apri la pagina pubblica dell\'incontro'))];
   }
   /* Annullamento dal riquadro del risultato: motivo obbligatorio e doppia conferma. Il risultato resta nello storico e si può reinserire. */
@@ -2120,7 +2249,7 @@ window.PCPDemoShow = function (which) {
         : [m.a.name && m.b.name ? U.versus(m) : h('p', { class: 'sub' }, 'Partecipanti da determinare.'), U.plannedLine(m), h('div', null, U.statusPill(m) || h('span', { class: 'pill' }, m.state === 'INCOERENTE' ? 'Da verificare: partecipanti cambiati' : 'Nessun risultato ufficiale'))],
         (m.warnings || []).map(function (w) { return h('div', null, h('span', { class: 'pill warn' }, w.msg)); })),
       h('div', { class: 'btnrow' },
-        can('results.write') && st !== 'SOSPESO' && st !== 'PROPOSTO' && m.a.name && m.b.name ? btn(official || m.state === 'INCOERENTE' ? 'Correggi risultato' : 'Inserisci risultato', '', function () { A.mode = 'official'; go({ name: 'wizard', matchId: m.id }); }) : null,
+        can('results.write') && st !== 'SOSPESO' && st !== 'PROPOSTO' && m.a.name && m.b.name ? btn(official || m.state === 'INCOERENTE' ? 'Correggi risultato' : 'Inserisci risultato', '', function () { A.mode = 'official'; go({ name: m.version > 0 || m.state === 'GIOCATO' ? 'wizard' : 'quick', matchId: m.id }); }) : null,
         st === 'PROPOSTO' && can('proposals.review') ? btn('Vai alle proposte', '', function () { A.tab = 'pro'; go({ name: 'manage' }); }) : null,
         can('results.write') && can('results.void') && st !== 'SOSPESO' && st !== 'PROPOSTO' && m.a.name && m.b.name ? btn('Forfait / disciplinare (6-0 6-0)', 'sec2', function () { forfeitOverlay(m); }) : null,
         can('results.suspend') && official ? act('Sospendi risultato', 'sec2', 'suspend') : null,
@@ -2688,7 +2817,7 @@ window.PCPDemoShow = function (which) {
   }
 
   /* ---------- Disegno ---------- */
-  var VIEWS = { boot: viewBoot, gate: viewGate, pick: viewPick, wizard: viewWizard, summary: viewSummary, done: viewDone, manage: viewManage, reject: viewReject, match: viewMatch, act: viewAct, schedule: viewSchedule,
+  var VIEWS = { boot: viewBoot, gate: viewGate, pick: viewPick, quick: viewQuick, wizard: viewWizard, summary: viewSummary, done: viewDone, manage: viewManage, reject: viewReject, match: viewMatch, act: viewAct, schedule: viewSchedule,
     team: viewTeam, partner: viewPartner, withdraw: viewWithdraw, 'adm-access': viewAdmAccess, 'adm-role': viewAdmRole, 'adm-codes': viewAdmCodes, 'adm-rules': viewAdmRules, 'adm-playoff': viewAdmPlayoff, 'adm-sponsors': viewAdmSponsors, 'adm-links': viewAdmLinks, 'adm-backup': viewAdmBackup, 'adm-delete': viewAdmDelete };
   /* ogni vista dichiara il permesso che richiede: senza permesso non viene nemmeno disegnata (il server rifiuterebbe comunque) */
   var NEED = { match: 'admin.read', act: 'admin.read', schedule: 'matches.schedule', reject: 'proposals.review', manage: 'admin.read', team: 'teams.manage', partner: 'teams.manage', withdraw: 'teams.manage',
@@ -2701,9 +2830,9 @@ window.PCPDemoShow = function (which) {
     var home = { kind: 'side', icon: 'home', label: 'Home', href: PUB + U.href(), onclick: toPublic }, items = [home];
     var pend = A.st && can('proposals.review') ? A.st.proposals.filter(function (p) { return p.status === 'IN_ATTESA'; }).length : 0;
     var nav2 = function (view, pre) { return function (ev) { ev.preventDefault(); if (!A.data) return; if (pre) pre(); go({ name: view }); }; };
-    if (can('results.write')) items.push({ kind: 'main', icon: 'plus', label: 'Inserisci risultato', href: '#nuovo', onclick: nav2('pick', function () { A.mode = 'official'; }), current: A.mode === 'official' && (n === 'pick' || n === 'wizard' || n === 'summary') });
+    if (can('results.write')) items.push({ kind: 'main', icon: 'plus', label: 'Inserisci risultato', href: '#nuovo', onclick: nav2('pick', function () { A.mode = 'official'; }), current: A.mode === 'official' && (n === 'pick' || n === 'quick' || n === 'wizard' || n === 'summary') });
     else if (!can('admin.read') && A.data && A.data.meta.features.proposals) items.push({ kind: 'main', icon: 'plus', label: 'Proponi risultato', href: '#proponi', onclick: nav2('pick', function () { A.mode = 'proposal'; }), current: n === 'pick' || n === 'wizard' || n === 'summary' });
-    if (can('admin.read')) items.push({ kind: 'side', icon: 'manage', label: 'Gestione', href: '#gestione', onclick: nav2('manage'), badge: pend || null, current: n !== 'pick' && n !== 'wizard' && n !== 'summary' && n !== 'done' && n !== 'gate' && n !== 'boot' });
+    if (can('admin.read')) items.push({ kind: 'side', icon: 'manage', label: 'Gestione', href: '#gestione', onclick: nav2('manage'), badge: pend || null, current: n !== 'pick' && n !== 'quick' && n !== 'wizard' && n !== 'summary' && n !== 'done' && n !== 'gate' && n !== 'boot' });
     else items.push({ kind: 'side', icon: 'user', label: 'Area Club', href: '#gestione', onclick: nav2('gate'), current: n === 'gate' });
     U.bottomBar(bar, items);
   }
