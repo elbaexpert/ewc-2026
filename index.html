@@ -440,6 +440,30 @@ html.ovl-open { overflow: hidden; }
 .rcrefresh { margin-left: auto; width: auto; min-height: 44px; padding: 4px 14px; }
 .rcact { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0 0 8px; } .rcact .btn { min-height: 46px; padding: 4px 10px; }
 
+/* ---- UX2: elenchi compatti, nomi su una riga, riepiloghi per torneo, anteprime ---- */
+.match { padding: 4px 14px 10px; }
+.mhead { display: flex; align-items: center; gap: 6px; min-height: 44px; }
+.mhead .ctx { flex: 1 1 auto; min-width: 0; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mhead .ctx .ctxt { overflow: hidden; text-overflow: ellipsis; }
+.mhead .mdate { flex: none; font-size: 13px; color: var(--muted); white-space: nowrap; }
+.mhead .mshare { margin-right: -10px; }
+.sc .nm { display: flex; align-items: center; min-width: 0; cursor: pointer; }
+.sc .nm .team, table.st td.l .team, .opt.tl .team { display: block; min-width: 0; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sc .nm .team .pl, table.st td.l .team .pl, .opt.tl .team .pl { display: inline; }
+.sc .nm.full .team { white-space: normal; overflow: visible; }
+.sc .nm .tick.cup { flex: none; }
+.sithead h2 { text-transform: none; }
+.sitt .sithead { background: linear-gradient(90deg, var(--tc-bg), rgba(255,255,255,0) 75%); border-radius: 0 var(--r-m) var(--r-m) 0; padding: 4px 8px; }
+.pobtn { margin: 4px 0 8px; min-height: 46px; }
+.chips.five .chip { flex: 1 1 auto; justify-content: center; }
+.exp img { display: block; width: auto; max-width: 100%; height: auto; max-height: min(64vh, 560px); margin: 0 auto 10px; border-radius: 10px; box-shadow: var(--e1); }
+.exp img.pick { cursor: pointer; -webkit-user-drag: none; user-select: none; } .exp img.pick.drag { touch-action: none; cursor: grab; }
+@media (min-width: 900px) { .expgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; } }
+.sithead h2 { white-space: nowrap; font-size: 18px; } .sithead .sub, .sitlink { white-space: nowrap; }
+.chips.five { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.chips.five .chip { padding: 4px 6px; min-width: 0; }
+@media (max-width: 420px) { .chips.five { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
 </style>
 </head>
 <body>
@@ -678,7 +702,7 @@ window.PCPDemoShow = function (which) {
 
   /** "Arnaldi/Rosselli" → Arnaldi / Rosselli (va a capo solo tra i due nomi). */
   function team(name, cls) {
-    var ps = String(name).split('/'), el = h('span', { class: 'team' + (cls ? ' ' + cls : '') });
+    var ps = String(name).split('/'), el = h('span', { class: 'team' + (cls ? ' ' + cls : ''), title: String(name).replace(/\s*\/\s*/g, ' / ') });
     ps.forEach(function (p, i) {
       if (i) add(el, [h('span', { class: 'sep' }, ' / ')]);
       add(el, h('span', { class: 'pl' }, p));
@@ -779,7 +803,7 @@ window.PCPDemoShow = function (which) {
     add(box, [h('span', { class: 'hd' }, ''), h('span', { class: 'hd' }, '1°'), h('span', { class: 'hd' }, '2°'), stb ? h('span', { class: 'hd' }, 'STB') : null]);
     ['A', 'B'].forEach(function (side, i) {
       var win = m.winner === side, t = side === 'A' ? m.a : m.b;
-      add(box, h('span', { class: 'nm' + (win ? ' win' : '') }, team(t.name), win ? [' ', h('span', { class: 'tick cup', title: 'Vincitrice', 'aria-hidden': 'true' }, '🏆'), h('span', { class: 'sr' }, ' vincitrice')] : null));
+      add(box, h('span', { class: 'nm' + (win ? ' win' : ''), onclick: function (ev) { ev.currentTarget.classList.toggle('full'); } }, team(t.name), win ? [' ', h('span', { class: 'tick cup', title: 'Vincitrice', 'aria-hidden': 'true' }, '🏆'), h('span', { class: 'sr' }, ' vincitrice')] : null));
       sc.sets.forEach(function (set) { add(box, h('span', { class: 'g' + (set[i] > set[1 - i] ? ' win' : '') }, set[i])); });
       if (stb) add(box, h('span', { class: 'g stb' + (stb[i] > stb[1 - i] ? ' win' : '') }, stb[i]));
     });
@@ -816,6 +840,13 @@ window.PCPDemoShow = function (which) {
   function metaRow(m) {
     var txt = (m.playedOn ? 'Giocato ' + day(m.playedOn) : 'Registrato ' + when(m.firstAt || m.at)) + (m.corrected ? ' · corretto' : '');
     return h('div', { class: 'mrow' }, h('span', { class: 'meta' }, txt),
+      h('a', { class: 'mshare', href: matchHref(m.id), 'aria-label': 'Apri e condividi il risultato ' + m.a.name + ' – ' + m.b.name }, icon('share', 20)));
+  }
+  /** Riga d'intestazione compatta degli elenchi: torneo/girone a sinistra, data e condivisione a destra (una sola riga). */
+  function headRow(m, ctxEl) {
+    var d = m.playedOn ? day(m.playedOn) : 'reg. ' + when(m.firstAt || m.at);
+    return h('div', { class: 'mhead' }, h('span', { class: 'ctx' }, ctxEl || null),
+      h('span', { class: 'mdate', title: m.playedOn ? 'Giocato ' + d : 'Registrato ' + d }, h('span', { class: 'sr' }, m.playedOn ? 'Giocato ' : ''), d + (m.corrected ? ' · corretto' : '')),
       h('a', { class: 'mshare', href: matchHref(m.id), 'aria-label': 'Apri e condividi il risultato ' + m.a.name + ' – ' + m.b.name }, icon('share', 20)));
   }
   function versus(m) { return h('div', { class: 'vs' }, team(m.a.name), h('span', { class: 'x' }, 'contro'), team(m.b.name)); }
@@ -860,7 +891,7 @@ window.PCPDemoShow = function (which) {
     var list = items.slice(0, n);
     if (!list.length) return h('div', { class: 'card empty' }, emptyText || 'Nessun risultato registrato finora.');
     return h('section', { class: 'card flush' }, list.map(function (x) {
-      return h('div', { class: 'match' }, ctx ? h('div', { class: 'ctx' }, tIcon(x.t.id, 18), ' ', ctx === 'g' ? x.g.label : x.t.name + ' · ' + x.g.label) : null, scoreCard(x.m), metaRow(x.m));
+      return h('div', { class: 'match' }, headRow(x.m, ctx ? [tIcon(x.t.id, 18), h('span', { class: 'ctxt' }, ctx === 'g' ? x.g.label : x.t.name + ' · ' + x.g.label)] : null), scoreCard(x.m));
     }));
   }
   function shareLink(m) { return h('a', { class: 'mlink', href: matchHref(m.id) }, icon('share', 18), h('span', null, 'Apri e condividi')); }
@@ -935,7 +966,7 @@ window.PCPDemoShow = function (which) {
   }
 
   root.PCPUI = { overlay: overlay, closeOverlay: closeOverlay, rulesOverlay: rulesOverlay, publicUrl: publicUrl, nowRome: nowRome, sponsorOf: sponsorOf, BRAND: BRAND, footer: footer, h: h, add: add, icon: icon, tIcon: tIcon, TOUR: TOUR, when: when, day: day, clock: clock, localKey: localKey, tSlug: tSlug, gSlug: gSlug, href: href, team: team,
-    header: header, bottomBar: bottomBar, session: session, matchHref: matchHref, statusPill: statusPill, plannedLine: plannedLine, findMatch: findMatch, shareLink: shareLink, standings: standings, liveCard: liveCard, metaRow: metaRow, scoreCard: scoreCard, matchMeta: matchMeta, dateLine: dateLine, versus: versus,
+    header: header, bottomBar: bottomBar, session: session, matchHref: matchHref, statusPill: statusPill, plannedLine: plannedLine, findMatch: findMatch, shareLink: shareLink, standings: standings, liveCard: liveCard, metaRow: metaRow, headRow: headRow, scoreCard: scoreCard, matchMeta: matchMeta, dateLine: dateLine, versus: versus,
     collect: collect, sortRecent: sortRecent, recent: recent, rulesBrief: rulesBrief, saveFile: saveFile, QUAL: QUAL };
 })(window);
 
@@ -956,6 +987,7 @@ window.PCPDemoShow = function (which) {
   };
   /* Sfondo per categoria: tonalità scure, testo bianco sempre leggibile. */
   var CAT = { GOLD: { bg: '#6a4d00', deep: '#493500' }, SILVER: { bg: '#465361', deep: '#313b46' }, BRONZE: { bg: '#6b3a1c', deep: '#4a2712' }, FEMM: { bg: '#74204a', deep: '#521533' } };
+  var CATA = { GOLD: '#c9971c', SILVER: '#7d8fa3', BRONZE: '#b0652f', FEMM: '#b8336f' }; // accento dei blocchi nei riepiloghi per torneo
   /* Stessa palette dell'app, ricavata dal logo ufficiale. */
   var C = { bg: '#042a4b', deep: '#031e36', card: '#ffffff', ink: '#0b2239', muted: '#55657a', line: '#dde5ec', brand: '#053863', night: '#042a4b', terra: '#b25433', sun: '#f8bc3a', sky: '#00adef', skyl: '#91d5e8',
     soft: '#eef2f6', win: '#042a4b', ok: '#17693f', okbg: '#e2f4e9', warn: '#8a4b00', warnbg: '#fff2d2', out: '#47545f', outbg: '#e9edf1' };
@@ -1254,7 +1286,11 @@ window.PCPDemoShow = function (which) {
     ctx.fillStyle = pal.deep; ctx.fillRect(0, H - footH, W, footH);
     var fy = H - footH / 2 + 8; ctx.fillStyle = '#ffffff'; ctx.textAlign = 'left'; font(ctx, 27, 700); ctx.fillText(U.BRAND.club, M, fy);
     ctx.textAlign = 'right'; font(ctx, 25, 600); if (U.BRAND.handle) ctx.fillText('Instagram ' + U.BRAND.handle, W - M, fy);
-    report.pages = 1; report.aperture = { x: apX, y: apY, w: apW, h: apH };
+    report.pages = 1; report.aperture = { x: apX, y: apY, w: apW, h: apH, kx: 0, ky: 0 };
+    if (o.photo) { // quanto si sposta la posizione (0–1) per ogni pixel di trascinamento sull'immagine finale
+      var v2 = o.photoView || {}, sc2 = Math.max(apW / o.photo.naturalWidth, apH / o.photo.naturalHeight) * Math.max(1, v2.zoom || 1), fx = o.photo.naturalWidth - apW / sc2, fy2 = o.photo.naturalHeight - apH / sc2;
+      report.aperture.kx = fx > 0.5 ? 1 / (fx * sc2) : 0; report.aperture.ky = fy2 > 0.5 ? 1 / (fy2 * sc2) : 0;
+    }
     return { canvases: [cv], report: report, format: F };
   }
 
@@ -1272,8 +1308,13 @@ window.PCPDemoShow = function (which) {
       title = 'Torneo ' + t.name;
       t.groups.forEach(function (g) { blocks.push(tableBlock(scratch, t, g, g.label, cw, k, report)); });
     } else if (o.scope === 'riepilogo') {
-      title = 'Riepilogo classifiche';
-      o.ts.forEach(function (tt) { tt.groups.forEach(function (g) { blocks.push(tableBlock(scratch, tt, g, tt.name + ' · ' + g.label, cw, k, report)); }); });
+      // un gruppo di pagine per torneo, ciascuno con la propria tonalità e intestazione («Riepilogo GOLD»…); numerazione per torneo
+      var parts = (o.ts || []).map(function (tt) { return build(Object.assign({}, o, { scope: 'riepilogo-t', t: tt })); });
+      parts.forEach(function (pp, pi) { report.overflow += pp.report.overflow; report.cut += pp.report.cut; report.pages += pp.report.pages; pp.canvases.forEach(function (cv, ci) { cv.ewcTid = o.ts[pi].id; cv.ewcPart = [ci + 1, pp.canvases.length]; }); });
+      return { canvases: [].concat.apply([], parts.map(function (pp) { return pp.canvases; })), report: report, format: F };
+    } else if (o.scope === 'riepilogo-t') {
+      title = 'Riepilogo ' + t.name.toUpperCase();
+      t.groups.forEach(function (g) { var b = tableBlock(scratch, t, g, g.label, cw, k, report); b.accent = CATA[t.id] || b.accent; blocks.push(b); });
     } else if (o.scope === 'recent') {
       title = t ? t.name + (o.g ? ' · ' + o.g.label : '') : 'Tutti i tornei';
       blocks.push(resultsBlock(scratch, 'Ultimi ' + (o.list.length === 1 ? 'risultato' : o.list.length + ' risultati'), o.list, o.g ? null : function (x) { return (t ? '' : x.t.name + ' · ') + x.g.label; }, cw, k, report));
@@ -1357,10 +1398,11 @@ window.PCPDemoShow = function (which) {
   }
 
   function toBlob(cv) { return new Promise(function (res) { cv.toBlob(function (b) { res(b); }, 'image/png'); }); }
-  function fileName(o, i, n) {
+  function fileName(o, i, n, cvs) {
     var slug = function (x) { return String(x).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); };
     var base = 'ewc-' + (o.t ? U.tSlug(o.t.id) : 'tutti') + (o.g && o.scope !== 'match' ? '-' + slug(o.g.label) : '') +
-      (o.scope === 'riepilogo' ? '-riepilogo' : o.scope === 'recent' ? '-ultimi' : o.scope === 'match' ? '-' + slug(o.x.m.id) : o.scope === 'playoff' ? '-fase-finale' : '') + '-' + o.format;
+      (o.scope === 'riepilogo' ? '-riepilogo' + (cvs && cvs[i] && cvs[i].ewcTid ? '-' + U.tSlug(cvs[i].ewcTid) : '') : o.scope === 'recent' ? '-ultimi' : o.scope === 'match' ? '-' + slug(o.x.m.id) : o.scope === 'playoff' ? '-fase-finale' : '') + '-' + o.format;
+    if (cvs && cvs[i] && cvs[i].ewcPart) return base + (cvs[i].ewcPart[1] > 1 ? '-' + cvs[i].ewcPart[0] + 'di' + cvs[i].ewcPart[1] : '') + '.png';
     return base + (n > 1 ? '-' + (i + 1) + 'di' + n : '') + '.png';
   }
   var logoP = null;
@@ -1380,7 +1422,7 @@ window.PCPDemoShow = function (which) {
   function finish(o, b, blobs) {
     return (function () {
       return { report: b.report, format: b.format, images: blobs.map(function (bl, i) {
-        return { blob: bl, url: URL.createObjectURL(bl), name: fileName(o, i, blobs.length), width: b.format.w, height: b.format.h };
+        return { blob: bl, url: URL.createObjectURL(bl), name: fileName(o, i, blobs.length, b.canvases), tid: b.canvases[i] && b.canvases[i].ewcTid || null, width: b.format.w, height: b.format.h };
       }), logo: !!o.logo };
     })();
   }
@@ -1577,9 +1619,10 @@ window.PCPDemoShow = function (which) {
       ts.length ? h('div', { class: 'rcact' }, h('a', { class: 'btn sec2', href: '#riepilogo-esporta' }, U.icon('share', 20), h('span', null, 'Condividi')),
         h('a', { class: 'btn sec2', href: '#riepilogo-esporta' }, U.icon('download', 20), h('span', null, 'Scarica'))) : null,
       ts.length ? ts.map(function (t) {
-        return h('section', { class: 'sitt', id: 'rcl-' + t.id, 'aria-label': t.name }, h('div', { class: 'sithead t-' + t.id }, U.tIcon(t.id, 26), h('h2', null, t.name),
-            h('span', { class: 'sub' }, gp(t) + ' / ' + gt(t) + ' incontri'), h('a', { class: 'sitlink', href: U.href(t.id) }, 'Apri torneo ›')),
-          t.groups.map(function (g, i) { return [standingsCard(t, g, true, i > 0), groupNotes(g)]; }));
+        return h('section', { class: 'sitt', id: 'rcl-' + t.id, 'aria-label': t.name }, h('div', { class: 'sithead t-' + t.id }, U.tIcon(t.id, 26), h('h2', null, 'Riepilogo ' + t.name.toUpperCase()),
+            h('span', { class: 'sub', title: gp(t) + ' incontri giocati su ' + gt(t) }, gp(t) + '/' + gt(t)), h('a', { class: 'sitlink', href: U.href(t.id), 'aria-label': 'Apri il torneo ' + t.name }, 'Apri ›')),
+          t.groups.map(function (g, i) { return [standingsCard(t, g, true, i > 0), groupNotes(g)]; }),
+          t.playoff && t.playoff.configured && t.playoff.qualifiers.length ? h('a', { class: 'btn sec2 pobtn', href: U.href(t.id, 'playoff-esporta') }, U.icon('share', 20), h('span', null, 'Condividi il tabellone della fase finale')) : null);
       }) : h('div', { class: 'card empty' }, 'Nessun torneo pubblicato al momento.')
     ];
   }
@@ -1613,7 +1656,7 @@ window.PCPDemoShow = function (which) {
       h('h2', { class: 'sec' }, 'Ultimi 5 risultati · ' + g.label), U.recent(played, 5, null, 'Nessun risultato registrato in questo girone.'),
       U.rulesBrief(t), exportBtn(U.href(t.id, U.gSlug(g.id) + '-esporta'), 'Condividi classifica e risultati')];
     else if (tab === 'ri') panel = played.length
-      ? h('section', { class: 'card flush' }, played.map(function (x) { return h('div', { class: 'match' }, U.scoreCard(x.m), U.metaRow(x.m)); }))
+      ? h('section', { class: 'card flush' }, played.map(function (x) { return h('div', { class: 'match' }, U.headRow(x.m), U.scoreCard(x.m)); }))
       : h('div', { class: 'card empty' }, 'Nessun risultato registrato in questo girone.');
     else panel = [
       todo.length ? h('section', { class: 'card flush' }, todo.map(function (m) { return todoItem(m, g); }))
@@ -1633,7 +1676,7 @@ window.PCPDemoShow = function (which) {
       var direct = ri > 0 && /^\dª /.test(x.label || '');
       return h('div', { class: 'slot' }, h('span', { class: 'lab' }, x.label, direct ? h('span', { class: 'bye' }, 'accesso diretto') : null), x.name ? h('span', { class: 'who' }, U.team(x.name)) : h('span', { class: 'who tbd' }, 'Da determinare'));
     };
-    if (m.state === 'GIOCATO') return h('div', { class: 'match pm' }, U.scoreCard(m), U.metaRow(m));
+    if (m.state === 'GIOCATO') return h('div', { class: 'match pm' }, U.headRow(m), U.scoreCard(m));
     return h('div', { class: 'match pm' }, side(m.a), side(m.b), U.plannedLine(m),
       m.state === 'INCOERENTE' ? h('span', { class: 'pill warn' }, 'Da verificare: i partecipanti sono cambiati') : U.statusPill(m) ? h('div', null, U.statusPill(m)) : null);
   }
@@ -1677,20 +1720,39 @@ window.PCPDemoShow = function (which) {
     ];
   }
 
+  /* Anteprima della card dell'incontro: un tocco sull'apertura (area bianca) sceglie la foto dalla galleria; trascinando si sposta l'inquadratura.
+   * Tutto resta sul dispositivo; il PNG finale viene ricreato a piena risoluzione. */
+  function photoPicker(im, E, again) {
+    var ap = E.res.report.aperture, st = null;
+    var inAp = function (ev, img) { var r = img.getBoundingClientRect(), k = im.width / r.width, x = (ev.clientX - r.left) * k, y = (ev.clientY - r.top) * k; return { k: k, inside: x >= ap.x && x <= ap.x + ap.w && y >= ap.y && y <= ap.y + ap.h }; };
+    var pick = function () { var f = document.getElementById('exp-ph'); if (f) f.click(); };
+    return h('img', { class: 'pick' + (E.photo ? ' drag' : ''), src: im.url, width: im.width, height: im.height, draggable: 'false', ondragstart: function (ev) { ev.preventDefault(); }, onpointercancel: function () { st = null; }, alt: 'Anteprima della card. ' + (E.photo ? 'Trascina la foto per spostarla; tocca per sceglierne un\'altra.' : 'Tocca l\'area bianca per scegliere una foto dalla galleria.'),
+      onpointerdown: function (ev) { var q = inAp(ev, ev.currentTarget); st = q.inside ? { x: ev.clientX, y: ev.clientY, k: q.k, moved: false } : null; if (st && E.photo) { try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (e) { /* facoltativo */ } } },
+      onpointermove: function (ev) { if (st && Math.abs(ev.clientX - st.x) + Math.abs(ev.clientY - st.y) > 8) st.moved = true; },
+      onpointerup: function (ev) {
+        if (!st) return; var s0 = st; st = null;
+        if (!s0.moved) return; S.dragAt = Date.now(); if (!E.photo || (!ap.kx && !ap.ky)) return;
+        var dx = (ev.clientX - s0.x) * s0.k, dy = (ev.clientY - s0.y) * s0.k, cl = function (v) { return Math.round(Math.min(1, Math.max(0, v)) * 1000) / 1000; };
+        again({ px: cl(E.px - dx * ap.kx), py: cl(E.py - dy * ap.ky) });
+      },
+      onclick: function (ev) { var q = inAp(ev, ev.currentTarget); if (q.inside && !(S.dragAt && Date.now() - S.dragAt < 600)) pick(); } });
+  }
+
   /* ---------- Esportazione card (solo risultati ufficiali) ---------- */
   function viewExport(spec) {
     var key = spec.key + '|' + S.snap.meta.dataVersion;
     var isMatch = spec.o.scope === 'match', spItems = (S.snap.sponsors && S.snap.sponsors.items) || [];
     if (!S.exp || S.exp.key !== key) {
-      var def = isMatch ? U.sponsorOf(S.snap, spec.o.x && spec.o.x.m ? spec.o.x.m.id : null) : null;
+      var def = isMatch ? U.sponsorOf(S.snap, spec.o.x && spec.o.x.m ? spec.o.x.m.id : null) : spec.o.scope === 'riepilogo' ? spItems.filter(function (x) { return x.main; })[0] || null : null; // riepilogo: solo il partner principale, mai lo sponsor di un singolo incontro
       releaseExp(); S.exp = { key: key, format: isMatch ? 'story' : spec.o.scope === 'riepilogo' ? 'riepilogo' : 'social', res: null, msg: null, working: false, sp: def ? def.id : '', sp2: '', spPos: 'bottom', spBig: false, spRing: false, photo: null, zoom: 1, px: 0.5, py: 0.5 };
     }
     var E = S.exp, X = root.PCPExport;
-    var again = function (ch) { var keep = { key: key, format: E.format, res: null, msg: null, working: false, sp: E.sp, sp2: E.sp2, spPos: E.spPos, spBig: E.spBig, spRing: E.spRing, photo: E.photo, zoom: E.zoom, px: E.px, py: E.py }; Object.keys(ch).forEach(function (k2) { keep[k2] = ch[k2]; }); if (E.res) E.res.images.forEach(function (im) { URL.revokeObjectURL(im.url); }); S.exp = keep; render(); };
+    var again = function (ch) { var keep = { key: key, only: E.only || '', format: E.format, res: null, msg: null, working: false, sp: E.sp, sp2: E.sp2, spPos: E.spPos, spBig: E.spBig, spRing: E.spRing, photo: E.photo, zoom: E.zoom, px: E.px, py: E.py }; Object.keys(ch).forEach(function (k2) { keep[k2] = ch[k2]; }); if (E.res) E.res.images.forEach(function (im) { URL.revokeObjectURL(im.url); }); S.exp = keep; render(); };
     var spSel = [E.sp, E.sp2].filter(function (id, i, a) { return id && a.indexOf(id) === i; }).map(function (id) { return spItems.filter(function (x) { return x.id === id; })[0]; }).filter(Boolean);
     if (!E.res && !E.working) {
       E.working = true;
-      X.render(Object.assign({ env: S.snap.meta.env, stamp: S.fetchedAt || new Date().toISOString(), format: E.format, sponsors: spSel, sponsorOpt: { pos: E.spPos, big: !!E.spBig, ring: !!E.spRing }, photoUrl: isMatch ? E.photo : null, photoView: { zoom: E.zoom, x: E.px, y: E.py } }, spec.o))
+      var o2 = spec.o.scope === 'riepilogo' && E.only ? Object.assign({}, spec.o, { ts: spec.o.ts.filter(function (tt) { return tt.id === E.only; }) }) : spec.o;
+      X.render(Object.assign({ env: S.snap.meta.env, stamp: S.fetchedAt || new Date().toISOString(), format: E.format, sponsors: spSel, sponsorOpt: { pos: E.spPos, big: !!E.spBig, ring: !!E.spRing }, photoUrl: isMatch ? E.photo : null, photoView: { zoom: E.zoom, x: E.px, y: E.py } }, o2))
         .then(function (res) { E.res = res; E.working = false; if (S.exp === E) render(); })
         .catch(function () { E.working = false; E.msg = 'Non è stato possibile creare le immagini su questo dispositivo.'; if (S.exp === E) render(); });
     }
@@ -1706,6 +1768,9 @@ window.PCPDemoShow = function (which) {
         return h('button', { class: 'chip col', type: 'button', 'aria-pressed': E.format === id ? 'true' : 'false', onclick: function () { if (E.format === id) return; again({ format: id }); } },
           h('strong', null, f.label), h('span', { class: 'sub' }, f.w + '×' + f.h));
       })),
+      spec.o.scope === 'riepilogo' ? h('div', { class: 'chips five', role: 'group', 'aria-label': 'Tornei da includere' }, [['', 'Tutti']].concat(spec.o.ts.map(function (tt) { return [tt.id, tt.name]; })).map(function (c) {
+        return h('button', { class: 'chip', type: 'button', 'aria-pressed': (E.only || '') === c[0] ? 'true' : 'false', onclick: function () { if ((E.only || '') !== c[0]) again({ only: c[0] }); } }, c[1]);
+      })) : null,
       spItems.length ? h('div', { class: 'card' }, h('label', { class: 'f', for: 'exp-sp' }, 'Sponsor / partner nell\'immagine (facoltativo)'),
         (function () { var sel = h('select', { class: 'in', id: 'exp-sp', onchange: function () { again({ sp: sel.value }); } }, [h('option', { value: '' }, 'Nessun logo')].concat(spItems.map(function (x) { return h('option', { value: x.id }, x.name + (x.main ? ' (principale)' : '')); }))); sel.value = E.sp || ''; return sel; })(),
         isMatch && spItems.length > 1 && E.sp ? [h('label', { class: 'f', for: 'exp-sp2' }, 'Secondo sponsor (facoltativo: i due loghi si dividono la larghezza)'),
@@ -1717,7 +1782,7 @@ window.PCPDemoShow = function (which) {
           h('p', { class: 'sub' }, 'Lo sfondo dietro al logo si adatta da solo: se il logo ha il suo sfondo (es. blu) viene continuato, altrimenti è bianco.')] : null) : null,
       isMatch ? h('div', { class: 'card' }, h('label', { class: 'f', for: 'exp-ph' }, 'Fotografia dell\'incontro (facoltativa)'),
         h('input', { class: 'in', id: 'exp-ph', type: 'file', accept: 'image/*', onchange: function (ev) { var f = ev.target.files && ev.target.files[0]; if (!f) return; if (E.photo) URL.revokeObjectURL(E.photo); again({ photo: URL.createObjectURL(f), zoom: 1, px: 0.5, py: 0.5 }); } }),
-        h('p', { class: 'sub' }, 'La foto resta sul tuo dispositivo, non viene inviata a nessuno: entra solo nell\'immagine che crei qui. Senza foto l\'apertura resta trasparente. Condividila soltanto se le persone ritratte sono d\'accordo.'),
+        h('p', { class: 'sub' }, 'Puoi anche toccare l\'area bianca dell\'anteprima per scegliere la foto e trascinarla per inquadrare tutti i giocatori. La foto resta sul tuo dispositivo, non viene inviata a nessuno: entra solo nell\'immagine che crei qui. Senza foto l\'apertura resta trasparente. Condividila soltanto se le persone ritratte sono d\'accordo.'),
         E.photo ? [
           h('label', { class: 'f', for: 'exp-zoom' }, 'Ingrandisci'), h('input', { class: 'in', id: 'exp-zoom', type: 'range', min: '1', max: '3', step: '0.05', value: String(E.zoom), onchange: function (ev) { again({ zoom: Number(ev.target.value) }); } }),
           h('label', { class: 'f', for: 'exp-px' }, 'Sposta a sinistra / destra'), h('input', { class: 'in', id: 'exp-px', type: 'range', min: '0', max: '1', step: '0.02', value: String(E.px), onchange: function (ev) { again({ px: Number(ev.target.value) }); } }),
@@ -1729,7 +1794,7 @@ window.PCPDemoShow = function (which) {
         E.res.images.map(function (im, i) {
           var file = null; try { file = new File([im.blob], im.name, { type: 'image/png' }); } catch (e) { file = null; }
           return h('section', { class: 'card exp' },
-            h('img', { src: im.url, alt: 'Anteprima immagine ' + (i + 1) + ' di ' + E.res.images.length + ': ' + spec.title, width: im.width, height: im.height }),
+            isMatch && E.res.report.aperture ? photoPicker(im, E, again) : h('img', { src: im.url, alt: 'Anteprima immagine ' + (i + 1) + ' di ' + E.res.images.length + ': ' + spec.title, width: im.width, height: im.height }),
             h('div', { class: 'btnrow two' },
               file && canShare(file) ? h('button', { class: 'btn', type: 'button', onclick: function () {
                 navigator.share({ files: [file], title: 'Elba Winter Championship' }).catch(function (e) { if (e && e.name !== 'AbortError') say('Condivisione non riuscita: usa "Scarica PNG".'); });
