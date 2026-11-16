@@ -427,6 +427,19 @@ html.ovl-open { overflow: hidden; }
 .bitem.main { box-shadow: 0 4px 10px -6px rgba(178,84,51,.7); }
 .qgrid .opt { min-height: 44px; }
 
+/* ---- Riepilogo classifiche ---- */
+.sitbtn { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 6px 14px; margin: 0 0 10px; border-radius: var(--r-m); background: var(--terra); color: #fff; text-decoration: none; font: 800 16px/1.1 var(--display); letter-spacing: -.01em; box-shadow: 0 4px 10px -6px rgba(178,84,51,.7); }
+.sitbtn:active { transform: scale(.985); } .sitbtn .go { margin-left: auto; font-size: 22px; line-height: 1; }
+.sitt { margin: 14px 0 4px; scroll-margin-top: 70px; }
+.sithead { display: flex; align-items: center; gap: 8px; margin: 0 0 6px; padding-left: 8px; border-left: 4px solid var(--tc); }
+.sithead h2 { font: 800 19px/1.1 var(--display); letter-spacing: -.02em; }
+.sithead .sub { margin-left: auto; font-size: 13px; }
+.sitlink { font-size: 14px; font-weight: 700; color: var(--navy); text-decoration: none; min-height: 44px; display: inline-flex; align-items: center; padding-left: 6px; }
+.rcbar { display: flex; align-items: center; gap: 8px; margin: 0 0 6px; }
+.rcwhen { font-size: 14px; font-weight: 700; color: var(--navy); } .rcwhen.warn { color: #9b4a00; }
+.rcrefresh { margin-left: auto; width: auto; min-height: 44px; padding: 4px 14px; }
+.rcact { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0 0 8px; } .rcact .btn { min-height: 46px; padding: 4px 10px; }
+
 </style>
 </head>
 <body>
@@ -938,7 +951,8 @@ window.PCPDemoShow = function (which) {
   var U = root.PCPUI;
   var FORMATS = {
     social: { id: 'social', label: 'Social 4:5', hint: '1080×1350 — Instagram, Facebook, WhatsApp', w: 1080, h: 1350, k: 1 },
-    story: { id: 'story', label: 'Verticale 9:16', hint: '1080×1920 — caratteri grandi, stato WhatsApp e storie', w: 1080, h: 1920, k: 1.22 }
+    story: { id: 'story', label: 'Verticale 9:16', hint: '1080×1920 — caratteri grandi, stato WhatsApp e storie', w: 1080, h: 1920, k: 1.22, not: 'riepilogo' },
+    riepilogo: { id: 'riepilogo', label: 'Riepilogo 9:16', hint: '1080×1920 — due gironi per immagine', w: 1080, h: 1920, k: 1, only: 'riepilogo' }
   };
   /* Sfondo per categoria: tonalità scure, testo bianco sempre leggibile. */
   var CAT = { GOLD: { bg: '#6a4d00', deep: '#493500' }, SILVER: { bg: '#465361', deep: '#313b46' }, BRONZE: { bg: '#6b3a1c', deep: '#4a2712' }, FEMM: { bg: '#74204a', deep: '#521533' } };
@@ -1246,7 +1260,7 @@ window.PCPDemoShow = function (which) {
 
   function build(o) {
     var F = FORMATS[o.format] || FORMATS.social, k = F.k, W = F.w, H = F.h, M = 48, cw = W - M * 2;
-    var report = { overflow: 0, pages: 0, width: W, height: H };
+    var report = { overflow: 0, pages: 0, cut: 0, width: W, height: H };
     var scratch = document.createElement('canvas').getContext('2d');
     var t = o.t, blocks = [], title;
     if (o.scope === 'group') {
@@ -1257,6 +1271,9 @@ window.PCPDemoShow = function (which) {
     } else if (o.scope === 'tournament') {
       title = 'Torneo ' + t.name;
       t.groups.forEach(function (g) { blocks.push(tableBlock(scratch, t, g, g.label, cw, k, report)); });
+    } else if (o.scope === 'riepilogo') {
+      title = 'Riepilogo classifiche';
+      o.ts.forEach(function (tt) { tt.groups.forEach(function (g) { blocks.push(tableBlock(scratch, tt, g, tt.name + ' · ' + g.label, cw, k, report)); }); });
     } else if (o.scope === 'recent') {
       title = t ? t.name + (o.g ? ' · ' + o.g.label : '') : 'Tutti i tornei';
       blocks.push(resultsBlock(scratch, 'Ultimi ' + (o.list.length === 1 ? 'risultato' : o.list.length + ' risultati'), o.list, o.g ? null : function (x) { return (t ? '' : x.t.name + ' · ') + x.g.label; }, cw, k, report));
@@ -1279,7 +1296,7 @@ window.PCPDemoShow = function (which) {
         if (y + need > maxY && pages[pages.length - 1].length) { pages.push([]); y = top0; }
         var seg = { b: b, y: y, from: i, part: part, h: titleH };
         while (i < b.items.length && (seg.y + seg.h + b.items[i].h <= maxY || seg.from === i)) { seg.h += b.items[i].h; i++; }
-        seg.to = i; pages[pages.length - 1].push(seg); y = seg.y + seg.h + gapB; part++;
+        seg.to = i; if (b.keepTogether && part > 0) report.cut++; pages[pages.length - 1].push(seg); y = seg.y + seg.h + gapB; part++;
         if (i < b.items.length) { pages.push([]); y = top0; }
       }
     });
@@ -1343,7 +1360,7 @@ window.PCPDemoShow = function (which) {
   function fileName(o, i, n) {
     var slug = function (x) { return String(x).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); };
     var base = 'ewc-' + (o.t ? U.tSlug(o.t.id) : 'tutti') + (o.g && o.scope !== 'match' ? '-' + slug(o.g.label) : '') +
-      (o.scope === 'recent' ? '-ultimi' : o.scope === 'match' ? '-' + slug(o.x.m.id) : o.scope === 'playoff' ? '-fase-finale' : '') + '-' + o.format;
+      (o.scope === 'riepilogo' ? '-riepilogo' : o.scope === 'recent' ? '-ultimi' : o.scope === 'match' ? '-' + slug(o.x.m.id) : o.scope === 'playoff' ? '-fase-finale' : '') + '-' + o.format;
     return base + (n > 1 ? '-' + (i + 1) + 'di' + n : '') + '.png';
   }
   var logoP = null;
@@ -1387,9 +1404,10 @@ window.PCPDemoShow = function (which) {
   function cacheSet(s) { try { localStorage.setItem(CACHE_KEY, JSON.stringify({ snap: s, at: S.fetchedAt })); } catch (e) { /* archivio non disponibile: si prosegue senza */ } }
   /** Legge l'indirizzo: { t, g, playoff, recent, matchId, exp } */
   function route() {
-    var p = location.hash.replace(/^#\/?/, '').toLowerCase().split(/[\/-]/).filter(Boolean), r = { t: null, g: null, playoff: false, recent: false, matchId: null, exp: false };
+    var p = location.hash.replace(/^#\/?/, '').toLowerCase().split(/[\/-]/).filter(Boolean), r = { t: null, g: null, playoff: false, recent: false, matchId: null, exp: false, sit: false };
     if (p[0] === 'home') p = [];
     if (p[p.length - 1] === 'esporta') { r.exp = true; p.pop(); }
+    if (p[0] === 'riepilogo') { r.sit = true; return r; }
     if (p[0] === 'incontro') { r.matchId = p[1] === 'po' ? p.slice(1).join('-').toUpperCase() : 'INC-' + (p[1] || ''); return r; }
     if (p[p.length - 1] === 'ultimi') { r.recent = true; p.pop(); }
     if (p[p.length - 1] === 'playoff') { r.playoff = true; p.pop(); }
@@ -1432,7 +1450,7 @@ window.PCPDemoShow = function (which) {
       refresh: { onclick: function () { load(false); }, busy: S.busy, alert: S.stale,
         label: S.busy ? '…' : S.stale ? 'Non in linea' : S.fetchedAt ? U.clock(S.fetchedAt) : '',
         full: S.fetchedAt ? 'Ultimo aggiornamento: ' + U.when(S.fetchedAt) : '' } });
-    var ctx = (t ? '-' + U.tSlug(t.id) + (g ? '-' + U.gSlug(g.id) : '') : ''), home = { kind: 'side', icon: 'home', label: 'Home', href: U.href(), current: !r.t && !r.matchId && !r.recent };
+    var ctx = (t ? '-' + U.tSlug(t.id) + (g ? '-' + U.gSlug(g.id) : '') : ''), home = { kind: 'side', icon: 'home', label: 'Home', href: U.href(), current: !r.t && !r.matchId && !r.recent && !r.sit };
     var items;
     if (U.session.can('results.write')) items = [home,
       { kind: 'main', icon: 'plus', label: 'Inserisci risultato', href: ADMIN + '#nuovo' + ctx, onclick: goAdmin('insert', t && t.id, g && g.id) },
@@ -1463,7 +1481,7 @@ window.PCPDemoShow = function (which) {
   function unofficialNote() {
     return h('div', { class: 'note warn' }, h('strong', null, 'Classifica ufficiale non disponibile'), 'Regolamento da confermare: qui sotto solo partite giocate, vinte e perse, nell\'ordine comunicato.');
   }
-  function standingsCard(t, g, link) {
+  function standingsCard(t, g, link, noLegend) {
     var zone = { q: g.official ? t.rules.perGroup : null, extra: t.rules.bestNext > 0 };
     var legend = g.official
       ? [g.started && zone.q ? [h('span', { class: 'key' }), 'prime ' + zone.q + ': zona qualificazione. ', zone.extra ? [h('span', { class: 'key k2' }), (zone.q + 1) + 'ª: può passare tra le migliori. '] : null] : null,
@@ -1472,7 +1490,7 @@ window.PCPDemoShow = function (which) {
     return h('section', { class: 'card flush accent t-' + t.id },
       h('div', { class: 'cardhead' }, h('h2', null, link ? h('a', { class: 'cardlink', href: U.href(t.id, U.gSlug(g.id)) }, g.label + ' ›') : (g.official ? 'Classifica' : 'Riepilogo partite')),
         h('span', { class: 'sub' }, g.played + ' di ' + g.total + ' giocati')),
-      U.standings(g, S.open, zone), h('div', { class: 'legend' }, legend));
+      U.standings(g, S.open, zone), noLegend ? null : h('div', { class: 'legend' }, legend));
   }
   function groupNotes(g) {
     var out = [];
@@ -1521,6 +1539,7 @@ window.PCPDemoShow = function (which) {
           var i = h('i'); i.style.width = (t.total ? Math.round(100 * gp(t) / t.total) : 0) + '%';
           var sp = h('span', null, i); sp.style.flex = (t.total || 1) + ' 1 0'; return sp;
         }))) : null,
+      ts.length ? h('a', { class: 'sitbtn', href: '#riepilogo' }, U.icon('manage', 22), h('span', null, 'Riepilogo classifiche'), h('span', { class: 'go', 'aria-hidden': 'true' }, '›')) : null,
       ts.length ? h('nav', { 'aria-label': 'Tornei' }, h('ul', { class: 'tiles' }, ts.map(function (t) {
         return h('li', null, h('a', { class: 'tile t-' + t.id, href: U.href(t.id) }, U.tIcon(t.id, 40), h('span', { class: 'tn' }, t.name), h('span', { class: 'tp' }, gp(t) + ' / ' + t.total + ' incontri'),
           h('progress', { max: t.total || 1, value: gp(t), 'aria-label': 'Avanzamento ' + t.name + ': ' + gp(t) + ' incontri su ' + t.total })));
@@ -1538,6 +1557,30 @@ window.PCPDemoShow = function (which) {
       ts.length ? [h('h2', { class: 'sec' }, 'Verso le finali'), h('ul', { class: 'finals' }, ts.map(function (t) {
         return h('li', null, h('a', { href: U.href(t.id, 'playoff') }, U.tIcon(t.id, 24), h('span', null, t.name)));
       }))] : null
+    ];
+  }
+
+  /* Riepilogo classifiche: tutte le classifiche in una sola vista, calcolate al momento (stesso motore e stessi dati delle pagine dei gironi). */
+  function viewRiepilogo() {
+    var ts = S.snap.tournaments, jump = function (id) { return function (ev) { ev.preventDefault(); var el = document.getElementById('rcl-' + id); if (el) el.scrollIntoView({ block: 'start' }); }; };
+    var gp = function (t) { return t.groups.reduce(function (a, g) { return a + g.played; }, 0); }, gt = function (t) { return t.groups.reduce(function (a, g) { return a + g.total; }, 0); };
+    return [
+      backLink(U.href(), 'Home'),
+      h('h1', { class: 'h1' }, 'Riepilogo classifiche'),
+      h('div', { class: 'rcbar', role: 'status' },
+        h('span', { class: 'rcwhen' + (S.stale ? ' warn' : '') }, S.stale ? 'Non in linea: dati salvati alle ' + (S.fetchedAt ? U.clock(S.fetchedAt) : '—') : S.busy ? 'Aggiornamento in corso…' : 'Aggiornato alle ' + (S.fetchedAt ? U.clock(S.fetchedAt) : '—')),
+        h('button', { class: 'btn sec2 rcrefresh', type: 'button', disabled: S.busy ? true : null, onclick: function () { load(false); } }, U.icon('refresh', 18), h('span', null, 'Aggiorna'))),
+      h('p', { class: 'sub' }, 'Risultati ufficiali salvati. I gironi non ancora conclusi hanno classifica provvisoria.'),
+      ts.length ? h('nav', { 'aria-label': 'Vai al torneo' }, h('ul', { class: 'chips four' }, ts.map(function (t) {
+        return h('li', null, h('a', { class: 'chip ic', href: '#riepilogo', onclick: jump(t.id) }, U.tIcon(t.id, 20), h('span', null, t.name)));
+      }))) : null,
+      ts.length ? h('div', { class: 'rcact' }, h('a', { class: 'btn sec2', href: '#riepilogo-esporta' }, U.icon('share', 20), h('span', null, 'Condividi')),
+        h('a', { class: 'btn sec2', href: '#riepilogo-esporta' }, U.icon('download', 20), h('span', null, 'Scarica'))) : null,
+      ts.length ? ts.map(function (t) {
+        return h('section', { class: 'sitt', id: 'rcl-' + t.id, 'aria-label': t.name }, h('div', { class: 'sithead t-' + t.id }, U.tIcon(t.id, 26), h('h2', null, t.name),
+            h('span', { class: 'sub' }, gp(t) + ' / ' + gt(t) + ' incontri'), h('a', { class: 'sitlink', href: U.href(t.id) }, 'Apri torneo ›')),
+          t.groups.map(function (g, i) { return [standingsCard(t, g, true, i > 0), groupNotes(g)]; }));
+      }) : h('div', { class: 'card empty' }, 'Nessun torneo pubblicato al momento.')
     ];
   }
 
@@ -1640,7 +1683,7 @@ window.PCPDemoShow = function (which) {
     var isMatch = spec.o.scope === 'match', spItems = (S.snap.sponsors && S.snap.sponsors.items) || [];
     if (!S.exp || S.exp.key !== key) {
       var def = isMatch ? U.sponsorOf(S.snap, spec.o.x && spec.o.x.m ? spec.o.x.m.id : null) : null;
-      releaseExp(); S.exp = { key: key, format: isMatch ? 'story' : 'social', res: null, msg: null, working: false, sp: def ? def.id : '', sp2: '', spPos: 'bottom', spBig: false, spRing: false, photo: null, zoom: 1, px: 0.5, py: 0.5 };
+      releaseExp(); S.exp = { key: key, format: isMatch ? 'story' : spec.o.scope === 'riepilogo' ? 'riepilogo' : 'social', res: null, msg: null, working: false, sp: def ? def.id : '', sp2: '', spPos: 'bottom', spBig: false, spRing: false, photo: null, zoom: 1, px: 0.5, py: 0.5 };
     }
     var E = S.exp, X = root.PCPExport;
     var again = function (ch) { var keep = { key: key, format: E.format, res: null, msg: null, working: false, sp: E.sp, sp2: E.sp2, spPos: E.spPos, spBig: E.spBig, spRing: E.spRing, photo: E.photo, zoom: E.zoom, px: E.px, py: E.py }; Object.keys(ch).forEach(function (k2) { keep[k2] = ch[k2]; }); if (E.res) E.res.images.forEach(function (im) { URL.revokeObjectURL(im.url); }); S.exp = keep; render(); };
@@ -1658,7 +1701,7 @@ window.PCPDemoShow = function (which) {
       h('a', { class: 'back', href: spec.back }, '‹ ' + spec.backLabel),
       spec.o.t ? pageTitle(spec.o.t, 'Esporta immagini') : h('h1', { class: 'h1' }, 'Esporta immagini'),
       h('p', { class: 'sub' }, spec.title + ' — con logo e colori del club, solo risultati ufficiali.'),
-      h('div', { class: 'chips two', role: 'group', 'aria-label': 'Formato' }, Object.keys(X.FORMATS).map(function (id) {
+      h('div', { class: 'chips two', role: 'group', 'aria-label': 'Formato' }, Object.keys(X.FORMATS).filter(function (id) { var f = X.FORMATS[id]; return (!f.only || f.only === spec.o.scope) && f.not !== spec.o.scope; }).map(function (id) {
         var f = X.FORMATS[id];
         return h('button', { class: 'chip col', type: 'button', 'aria-pressed': E.format === id ? 'true' : 'false', onclick: function () { if (E.format === id) return; again({ format: id }); } },
           h('strong', null, f.label), h('span', { class: 'sub' }, f.w + '×' + f.h));
@@ -1704,6 +1747,7 @@ window.PCPDemoShow = function (which) {
   /** Dall'indirizzo alla pagina (o alla card da esportare). */
   function resolve(r) {
     var ts = S.snap.tournaments;
+    if (r.sit) return r.exp ? { exp: { key: 'riepilogo', o: { scope: 'riepilogo', ts: ts }, title: 'Riepilogo classifiche', back: '#riepilogo', backLabel: 'Riepilogo classifiche' } } : { view: viewRiepilogo() };
     if (r.matchId) {
       var x = U.findMatch(ts, r.matchId);
       if (!x) return { view: notFound('Incontro non trovato o non pubblicato.') };
