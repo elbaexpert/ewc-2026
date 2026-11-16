@@ -1134,7 +1134,9 @@ window.PCPDemoShow = function (which) {
     var rowA = Math.max(92, na.lines.length * na.size * 1.2 + 26), rowB = Math.max(92, nb.lines.length * nb.size * 1.2 + 26);
     var pts = g.official && m.ptsA != null ? 'Punti assegnati  ' + m.ptsA + (m.pendingA ? '*' : '') + ' – ' + m.ptsB + (m.pendingB ? '*' : '') : '';
     var ref = [m.id, m.playedOn ? 'giocato ' + U.day(m.playedOn) : null].filter(Boolean).join('  ·  ');
-    var panH = 26 + 46 + rowA + rowB + (pts ? 56 : 22), spImgs = (o.sponsorImgs || []).slice(0, 1), spH = spImgs.length ? 118 : 0;
+    var panH = 26 + 46 + rowA + rowB + (pts ? 56 : 22), spImgs = (o.sponsorImgs || []).slice(0, 1), spLogoH = 0, spLogoW = 0;
+    if (spImgs.length) { var spR = spImgs[0].naturalWidth / spImgs[0].naturalHeight; spLogoW = Math.min(cw - 64, 120 * spR); spLogoH = spLogoW / spR; }
+    var spH = spImgs.length ? Math.round(spLogoH + 40) : 0;
     var panY = H - footH - gap - spH - (spH ? gap - 8 : 0) - panH, apX = M, apY = headH + 24, apW = cw, apH = panY - gap - apY;
     var hole = function () { rr(ctx, apX, apY, apW, apH, R); };
     // 1. fotografia (dietro): riempie l'apertura senza deformarsi; ingrandimento e posizione scelti dall'operatore
@@ -1156,9 +1158,9 @@ window.PCPDemoShow = function (which) {
     // intestazione compatta: logo ufficiale (non modificato) su targa bianca, evento, categoria · girone
     var tx = M, lh = 100;
     if (o.logo) { var lw = lh * o.logo.naturalWidth / o.logo.naturalHeight, pw = lw + 30, ph = lh + 24; ctx.fillStyle = '#ffffff'; rr(ctx, M, 24, pw, ph, 22); ctx.fill(); ctx.drawImage(o.logo, M + 15, 36, lw, lh); tx = M + pw + 28; }
-    ctx.textAlign = 'left'; ctx.fillStyle = C.sun; font(ctx, 28, 800); ctx.fillText('Elba Winter Championship', tx, 66);
-    var title = t.name + ' · ' + g.label, tl = nameLines(ctx, title, W - M - tx - 20, 56, 32, 800, report); font(ctx, tl.size, 800); ctx.fillStyle = '#ffffff'; ctx.fillText(tl.lines[0], tx, 128);
-    if (o.env !== 'PROD') { font(ctx, 20, 800); var tw = ctx.measureText('TEST · dati di prova').width + 26; ctx.fillStyle = C.sun; rr(ctx, W - M - tw, 28, tw, 36, 18); ctx.fill(); ctx.fillStyle = C.night; ctx.fillText('TEST · dati di prova', W - M - tw + 13, 53); }
+    ctx.textAlign = 'left'; var ev = nameLines(ctx, 'Elba Winter Championship', W - M - tx - 20, 48, 30, 800, report); ctx.fillStyle = C.sun; font(ctx, ev.size, 800); ctx.fillText(ev.lines[0], tx, 76);
+    var title = t.name + ' · ' + g.label, tl = nameLines(ctx, title, W - M - tx - 20 - (o.env !== 'PROD' ? 260 : 0), 36, 24, 700, report); font(ctx, tl.size, 700); ctx.fillStyle = '#ffffff'; ctx.fillText(tl.lines[0], tx, 126);
+    if (o.env !== 'PROD') { font(ctx, 20, 800); var tw = ctx.measureText('TEST · dati di prova').width + 26; ctx.fillStyle = C.sun; rr(ctx, W - M - tw, 96, tw, 36, 18); ctx.fill(); ctx.fillStyle = C.night; ctx.fillText('TEST · dati di prova', W - M - tw + 13, 121); }
     [[C.terra, 0, 0.58], [C.sun, 0.58, 0.76], [C.skyl, 0.76, 0.88], [C.sky, 0.88, 1]].forEach(function (st) { ctx.fillStyle = st[0]; ctx.fillRect(W * st[1], headH - 8, W * (st[2] - st[1]) + 1, 8); });
     // dettaglio diagonale tra apertura e risultato
     var gy = apY + apH + 11; band(M + 8, gy, 230, 9, 18, C.terra); band(M + 256, gy, 90, 9, 18, C.sun); band(M + 364, gy, 42, 9, 18, C.sky);
@@ -1182,8 +1184,8 @@ window.PCPDemoShow = function (which) {
     if (pts) { font(ctx, 25, 600); ctx.fillStyle = 'rgba(255,255,255,.8)'; ctx.textAlign = 'left'; ctx.fillText(pts, M + pad, yy + 36); }
     // sponsor (solo se scelto nell'area Sponsor): logo su targa bianca, proporzioni originali; altrimenti nessuna traccia
     if (spImgs.length) {
-      var sim = spImgs[0], sh = 78, sw3 = Math.min(cw - 80, sh * sim.naturalWidth / sim.naturalHeight), spw = sw3 + 48, spx = (W - spw) / 2, spy = panY + panH + gap - 8;
-      ctx.fillStyle = '#ffffff'; rr(ctx, spx, spy, spw, sh + 40, 24); ctx.fill(); ctx.drawImage(sim, spx + 24, spy + 20, sw3, sh);
+      var spy = panY + panH + gap - 8; ctx.fillStyle = '#ffffff'; rr(ctx, M, spy, cw, spH, 24); ctx.fill();
+      ctx.drawImage(spImgs[0], M + (cw - spLogoW) / 2, spy + 20, spLogoW, spLogoH);
     }
     // piè di pagina: club a sinistra, Instagram a destra
     ctx.fillStyle = pal.deep; ctx.fillRect(0, H - footH, W, footH);
