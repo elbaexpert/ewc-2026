@@ -2823,7 +2823,9 @@ window.PCPDemoShow = function (which) {
       : kind === 'team' ? A.st.teams.map(function (t) { return [t.id, t.name.replace('/', ' / ') + ' (' + t.groupId + ')']; })
       : Object.keys(A.st.history).map(function (id) { var x = findMatch(id); return [id, id + (x && x.m.a.name ? ' — ' + x.m.a.name + ' – ' + x.m.b.name : '')]; });
     var ks = select('dkind', kinds, kind), ids = select('did', opts, V.id); ks.addEventListener('change', function () { go({ name: 'adm-delete', kind: ks.value }); });
-    var phrase = input('dphrase', { autocapitalize: 'characters', value: V.typed || '' }), pre = V.pre;
+    /* scelta e frasi restano anche se la pagina si ridisegna (es. quando arriva lo stato del servizio email): mai tornare in silenzio al primo elemento */
+    ids.addEventListener('change', function () { V.id = ids.value; });
+    var phrase = input('dphrase', { autocapitalize: 'characters', value: V.typed || '', oninput: function (ev) { V.typed = ev.target.value; } }), pre = V.pre;
     return [admBack(), h('h1', { class: 'h1' }, 'Eliminazioni e cestino'), errBox(V.error), flash(),
       h('div', { class: 'note warn' }, 'Le eliminazioni sono definitive per chi usa l\'app. Servono: anteprima, backup scaricato adesso, frase di conferma. I dati eliminati restano nel cestino per un eventuale recupero.'),
       h('section', { class: 'card' }, h('h2', null, '1 · Che cosa eliminare'), field('dkind', 'Tipo', ks), opts.length ? field('did', 'Quale', ids) : h('p', { class: 'sub' }, 'Niente da selezionare.'),
@@ -2849,7 +2851,7 @@ window.PCPDemoShow = function (which) {
       h('h2', { class: 'sec' }, 'Azzeramento del progetto'),
       h('section', { class: 'card' }, h('p', null, 'Riporta tornei, coppie, incontri e risultati allo stato iniziale. Ruoli, accessi e registro restano.'),
         h('h2', null, '1 · Backup obbligatorio'), backupSteps(V, 'rbk'),
-        field('rphrase', '2 · Per confermare scrivi: AZZERA PROGETTO', input('rphrase', { autocapitalize: 'characters' })),
+        field('rphrase', '2 · Per confermare scrivi: AZZERA PROGETTO', input('rphrase', { autocapitalize: 'characters', value: V.rtyped || '', oninput: function (ev) { V.rtyped = ev.target.value; } })),
         h('div', { class: 'btnrow' }, busyBtn('Azzera il progetto…', 'danger', function () {
           var typed = document.getElementById('rphrase').value.trim();
           if (!gateReady(V, 'rbk')) { V.error = 'Protezione mancante: crea il backup, controlla il file salvato' + (mailOk(V.mail) ? ' e invialo via email' : '') + '.'; render(); return; }
