@@ -2635,12 +2635,14 @@ window.PCPDemoShow = function (which) {
     var val = function (k, d) { return String(f[k] != null ? f[k] : (P[k] != null ? P[k] : d)); };
     var e = { win20: select('r-win20', range(1, 3), val('win20', 3)), win21: select('r-win21', range(1, 3), val('win21', 2)), lossStbPts: select('r-lsp', range(0, 1), val('lossStbPts', 0)),
       lossStbMinGames: select('r-lsg', range(0, 10), val('lossStbMinGames', 0)), perGroup: select('r-pg', range(1, 4), val('perGroup', 2)), bestNext: select('r-bn', range(0, 4), val('bestNext', 0)),
-      stbWinByTwo: select('r-wb2', YESNO, f.stbWinByTwo || (P.stbWinByTwo === 'NO' ? 'NO' : 'SI')) };
+      stbWinByTwo: select('r-wb2', YESNO, f.stbWinByTwo || (P.stbWinByTwo === 'NO' ? 'NO' : 'SI')),
+      loss02: select('r-l02', YESNO, f.loss02 || (P.loss02 === 'SI' ? 'SI' : 'NO')) };
     var NUM = ['win20', 'win21', 'lossStbPts', 'lossStbMinGames', 'perGroup', 'bestNext'];
     var read = function () {
       var c = {};
       NUM.forEach(function (k) { var v = Number(e[k].value); f[k] = v; if (v !== (P[k] == null && k === 'bestNext' ? 0 : P[k])) c[k] = v; });
       f.stbWinByTwo = e.stbWinByTwo.value; if (f.stbWinByTwo !== P.stbWinByTwo) c.stbWinByTwo = f.stbWinByTwo;
+      f.loss02 = e.loss02.value; if (f.loss02 !== (P.loss02 === 'SI' ? 'SI' : 'NO')) c.loss02 = f.loss02;
       if (P.stbInGameDiff !== 'ESCLUSO') c.stbInGameDiff = 'ESCLUSO';
       if (!P.confirmed) { c.confirm = true; NUM.slice(0, 5).forEach(function (k) { c[k] = f[k]; }); }
       return c;
@@ -2659,6 +2661,7 @@ window.PCPDemoShow = function (which) {
       started ? h('div', { class: 'note warn' }, h('strong', null, 'Fase finale già iniziata'), 'Le modifiche che cambiano classifiche o qualificate sono bloccate. Si possono applicare solo con la procedura straordinaria, con motivazione estesa.') : null,
       h('section', { class: 'card' }, h('h2', null, 'Punti in classifica'), h('div', { class: 'two' }, h('div', null, field('r-win20', 'Vittoria 2-0', e.win20)), h('div', null, field('r-win21', 'Vittoria al super tie-break', e.win21)),
         h('div', null, field('r-lsp', 'Sconfitta al super tie-break', e.lossStbPts)), h('div', null, field('r-lsg', 'Soglia game nei due set per quel punto (0 = sempre)', e.lossStbMinGames))),
+      h('div', { class: 'two' }, h('div', null, field('r-l02', 'Sconfitta 0-2 con almeno 10 game nei due set: 1 punto', e.loss02))),
         h('p', { class: 'sub' }, 'Le altre sconfitte valgono sempre 0 punti. Il punto per la sconfitta al super tie-break si assegna da solo quando la coppia ha raggiunto la soglia di game.')),
       h('section', { class: 'card' }, h('h2', null, 'Super tie-break e qualificazione'), field('r-wb2', 'Super tie-break: due punti di scarto obbligatori', e.stbWinByTwo),
         h('p', { class: 'sub' }, 'Il super tie-break non entra nella differenza game. A pari punti: differenza game, poi scontro diretto.'),
