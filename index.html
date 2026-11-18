@@ -492,16 +492,19 @@ html.ovl-open { overflow: hidden; }
 .pickwrap img.pick { display: block; width: 100%; height: auto; max-height: none; }
 
 /* ============ 9. RIFINITURE UX (classifiche compatte, Condividi, sponsor in intestazione, editor immagine) ============ */
-/* Intestazione: sponsor principale al centro. Desktop: centrato sulla riga; telefono: seconda riga centrata, sotto titolo e pulsanti. */
-.top.hassp { flex-wrap: wrap; }
-.hsp { display: flex; align-items: center; justify-content: center; pointer-events: none; }
-.hsp img { display: block; height: 26px; max-width: 150px; width: auto; object-fit: contain; }
-@media (max-width: 719px) { .top.hassp { padding-bottom: 8px; } .hsp { order: 5; flex: 0 0 100%; padding-top: 2px; } }
-@media (min-width: 720px) {
-  .top.hassp { flex-wrap: nowrap; }
-  .hsp { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -52%); } .hsp img { height: 38px; max-width: 200px; }
-  .top.hassp .httl { padding-right: 210px; }
-}
+/* Intestazione compatta: logo · titolo su due righe · sponsor principale a destra · aggiorna (icona discreta). Nessuna riga in più. */
+.httl .title .tl { display: block; }
+.httl .title { font-size: 16px; line-height: 1.08; }
+.httl .club:empty { display: none; }
+.hsp { flex: none; margin-left: auto; display: flex; align-items: center; justify-content: flex-end; min-width: 0; pointer-events: none; }
+.hsp img { display: block; height: 30px; max-width: min(34vw, 120px); width: auto; object-fit: contain; }
+.httl { flex: 0 1 auto; }
+.top:not(.hassp) .httl { flex: 1; }
+.hbtn.upd { background: transparent; box-shadow: none; padding: 0; min-width: 44px; min-height: 44px; color: var(--muted); }
+.hbtn.upd.alert { background: var(--warn-bg); color: var(--warn); padding: 2px 8px; flex-direction: row; gap: 4px; border-radius: 22px; font-size: 12px; white-space: nowrap; }
+.hbtn.upd.alert .updt { font-size: 12px; font-weight: 700; }
+@media (max-width: 359px) { .top { gap: 6px; padding-inline: 8px; } .hlogo img { height: 38px; } .httl .title { font-size: 14.5px; } .hsp img { height: 26px; max-width: 28vw; } }
+@media (min-width: 600px) { .httl .title { font-size: 20px; } .hsp img { height: 38px; max-width: 200px; } }
 /* Classifica: riga bassa, posizione piccola, nomi larghi, colonne numeriche allineate (intestazione e valori centrati sulla stessa colonna) */
 table.st { table-layout: fixed; }
 table.st th { padding: 3px 0 4px; font-size: 13px; text-align: center; }
@@ -573,6 +576,25 @@ tr.zero td.l .team { font-weight: 600; color: #3a4a5c; }
 #testbar{position:fixed;top:0;left:0;right:0;z-index:99999;height:24px;line-height:24px;background:#b00020;color:#fff;font:700 12px/24px system-ui,sans-serif;text-align:center;letter-spacing:.02em;pointer-events:none}
 body.testmode{padding-top:24px}
 body.testmode .top{top:24px}
+
+/* Controlli di esportazione compatti: formato + Condividi + Scarica in una riga; sponsor a menu */
+.expbar { display: flex; align-items: center; gap: 8px; margin: 8px 0; flex-wrap: nowrap; }
+.expbar .seg { display: inline-flex; gap: 6px; flex: none; }
+.expbar .seg .chip { min-width: 52px; min-height: 44px; justify-content: center; padding: 0 12px; font-weight: 800; }
+.expbar .btn { min-height: 44px; padding: 0 12px; flex: 1 1 auto; justify-content: center; white-space: nowrap; }
+.expbar .btn.dl { flex: 0 0 auto; }
+@media (max-width: 420px) { .expbar .btn.dl .lbl { display: none; } .expbar .btn.dl { min-width: 48px; padding: 0 10px; } }
+.spsel { margin: 0 0 8px; }
+.spbtn { display: flex; width: 100%; align-items: center; justify-content: space-between; min-height: 44px; padding: 0 14px; border: 1.5px solid var(--line, #cfdbe6); border-radius: 12px; background: #fff; color: var(--navy); font: 600 15px var(--body, inherit); cursor: pointer; }
+.spbtn strong { font-weight: 800; }
+.sppanel2 { margin-top: 6px; padding: 10px 12px; border: 1.5px solid var(--line, #cfdbe6); border-radius: 12px; background: #fff; }
+.spnone { margin: 4px 0 8px; }
+/* Foto: indicazione di trascinamento, sparisce alla prima interazione */
+.phtip { position: absolute; display: flex; justify-content: center; padding-top: 10px; pointer-events: none; z-index: 2; box-sizing: border-box; }
+.phtipi { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 999px; background: rgba(4,22,40,.78); color: #fff; font: 700 14px/1 system-ui, sans-serif; box-shadow: 0 2px 8px rgba(0,0,0,.3); }
+.phtipi .phg { font-size: 18px; line-height: 1; }
+.expbar .btn { width: auto; }
+@media (max-width: 460px) { #testbar { font-size: 10.5px; letter-spacing: 0; white-space: nowrap; overflow: hidden; } }
 
 </style>
 </head>
@@ -836,10 +858,10 @@ window.PCPDemoShow = function (which) {
     add(el, [
       h('a', { class: 'hlogo', href: o.home.href, onclick: o.home.onclick, 'aria-label': 'Home — ' + BRAND.club },
         BRAND.logo ? h('img', { src: BRAND.logo, alt: '', width: 600, height: 448 }) : icon('home', 26)),
-      h('div', { class: 'httl' }, h('div', { class: 'title' }, o.title), h('div', { class: 'club' }, o.sub || '', o.test ? h('span', { class: 'testpill' }, 'TEST') : null)),
-      o.refresh ? h('button', { class: 'hbtn upd' + (o.refresh.busy ? ' busy' : '') + (o.refresh.alert ? ' alert' : ''), type: 'button', onclick: o.refresh.onclick,
-        'aria-label': 'Aggiorna i dati. ' + (o.refresh.full || '') }, icon('refresh', 22), h('span', { class: 'updt' }, o.refresh.label || '')) : null,
-      o.sponsor && o.sponsor.image ? h('div', { class: 'hsp', title: 'Sponsor principale: ' + o.sponsor.name }, h('img', { src: o.sponsor.image, alt: o.sponsor.name, decoding: 'async' })) : null
+      h('div', { class: 'httl' }, h('div', { class: 'title' }, String(o.title).split('\n').map(function (ln) { return h('span', { class: 'tl' }, ln); })), o.sub || o.test ? h('div', { class: 'club' }, o.sub || '', o.test ? h('span', { class: 'testpill' }, 'TEST') : null) : null),
+      o.sponsor && o.sponsor.image ? h('div', { class: 'hsp', title: 'Sponsor principale: ' + o.sponsor.name }, h('img', { src: o.sponsor.image, alt: o.sponsor.name, decoding: 'async' })) : null,
+      o.refresh ? h('button', { class: 'hbtn upd' + (o.refresh.busy ? ' busy' : '') + (o.refresh.alert ? ' alert' : ''), type: 'button', onclick: o.refresh.onclick, title: 'Aggiorna i dati',
+        'aria-label': 'Aggiorna i dati. ' + (o.refresh.alert ? 'Non in linea: dati non aggiornati. ' : '') + (o.refresh.full || '') }, icon('refresh', 22), o.refresh.alert ? h('span', { class: 'updt' }, 'Non in linea') : null) : null
     ]);
     el.classList.toggle('hassp', !!(o.sponsor && o.sponsor.image));
   }
@@ -1146,9 +1168,9 @@ window.PCPDemoShow = function (which) {
   'use strict';
   var U = root.PCPUI;
   var FORMATS = {
-    social: { id: 'social', label: 'Social 4:5', hint: '1080×1350 — Instagram, Facebook, WhatsApp', w: 1080, h: 1350, k: 1 },
-    story: { id: 'story', label: 'Verticale 9:16', hint: '1080×1920 — caratteri grandi, stato WhatsApp e storie', w: 1080, h: 1920, k: 1.22, not: 'riepilogo' },
-    riepilogo: { id: 'riepilogo', label: 'Riepilogo 9:16', hint: '1080×1920 — due gironi per immagine', w: 1080, h: 1920, k: 1, only: ['riepilogo', 'tournament'] }
+    social: { id: 'social', label: 'Social 4:5', short: '4:5', hint: '1080×1350 — Instagram, Facebook, WhatsApp', w: 1080, h: 1350, k: 1 },
+    story: { id: 'story', label: 'Verticale 9:16', short: '9:16', hint: '1080×1920 — caratteri grandi, stato WhatsApp e storie', w: 1080, h: 1920, k: 1.22, not: ['riepilogo', 'tournament'] },
+    riepilogo: { id: 'riepilogo', label: 'Verticale 9:16', short: '9:16', hint: '1080×1920 — due gironi per immagine', w: 1080, h: 1920, k: 1, only: ['riepilogo', 'tournament'] }
   };
   /* Sfondo per categoria: tonalità scure, testo bianco sempre leggibile. */
   var CAT = { GOLD: { bg: '#6a4d00', deep: '#493500' }, SILVER: { bg: '#465361', deep: '#313b46' }, BRONZE: { bg: '#6b3a1c', deep: '#4a2712' }, FEMM: { bg: '#74204a', deep: '#521533' } };
@@ -1332,33 +1354,60 @@ window.PCPDemoShow = function (which) {
     return { title: title, right: list.length === 1 ? '1 incontro' : list.length + ' incontri', items: items, accent: C.terra };
   }
 
-  /** Tabellone della fase finale: qualificate e, se configurati, i turni con partecipanti e risultati ufficiali. */
+  /** Tabellone della fase finale: una scheda per fase, con gli incontri veri (due coppie contrapposte), risultati o segnaposto, e dove va il vincitore. */
   function playoffBlocks(mc, t, W, k, report) {
-    var po = t.playoff, pad = 28 * k, blocks = [];
-    var line = function (label, name, last) {
-      var nl = name ? nameLines(mc, name, W - pad * 2 - 330 * k, 32 * k, 22 * k, 700, report) : null, hh = Math.max(64 * k, (nl ? nl.lines.length * nl.size * 1.2 : 0) + 26 * k);
-      return { h: hh, draw: function (ctx, x, y) {
-        ctx.textAlign = 'left'; font(ctx, 24 * k, 500); ctx.fillStyle = C.muted; ctx.fillText(label, x + pad, y + hh / 2 + 9 * k);
-        if (nl) { ctx.textAlign = 'right'; ctx.fillStyle = C.ink; font(ctx, nl.size, 700); nl.lines.forEach(function (l, i) { ctx.fillText(l, x + W - pad, y + (hh - nl.lines.length * nl.size * 1.2) / 2 + nl.size * 0.95 + i * nl.size * 1.2); }); }
-        else { ctx.textAlign = 'right'; ctx.fillStyle = C.muted; font(ctx, 26 * k, 400); ctx.fillText('Da determinare', x + W - pad, y + hh / 2 + 9 * k); }
-        if (!last) { ctx.fillStyle = C.line; ctx.fillRect(x + pad, y + hh - 1, W - pad * 2, 1.5); }
+    var po = t.playoff, pad = 34 * k, blocks = [], rounds = po.rounds || [];
+    var all = []; rounds.forEach(function (r) { r.matches.forEach(function (m) { all.push({ m: m, r: r }); }); });
+    var next = function (m, kind) { var lab = kind + ' ' + m.slot, f = all.filter(function (x) { return x.m.a.label === lab || x.m.b.label === lab; })[0]; return f ? f.m.slot + (f.r.name ? ' (' + f.r.name + ')' : '') : null; };
+    var card = function (m, r, last) {
+      var played = m.state === 'GIOCATO' && m.score, stb = played ? m.score.stb : null, bw = 56 * k, sw = 70 * k, gap = 7 * k, boxW = played ? bw * 2 + gap + (stb ? sw + gap : 0) : 0;
+      var nameW = W - pad * 2 - (played ? boxW + 52 * k : 200 * k);
+      var side = function (tm, win) {
+        var has = !!tm.name, nl = nameLines(mc, has ? tm.name : (tm.label || 'Da determinare'), nameW, 30 * k, 20 * k, has ? (win ? 700 : 600) : 500, report);
+        return { tm: tm, has: has, nl: nl, h: Math.max(54 * k, nl.lines.length * nl.size * 1.2 + 14 * k) };
+      };
+      var A = side(m.a, played && m.winner === 'A'), B = side(m.b, played && m.winner === 'B');
+      var w1 = next(m, 'Vincente'), l1 = next(m, 'Perdente');
+      var prog = !w1 && !l1 ? (po.champion && m.state === 'GIOCATO' && m.winner ? 'Il vincitore è la coppia campione' : 'Il vincitore è la coppia campione del torneo') : (w1 ? 'Il vincitore passa a ' + w1 : '') + (w1 && l1 ? ' · ' : '') + (l1 ? 'lo sconfitto va a ' + l1 : '');
+      var status = played ? 'Giocato' + (m.playedOn ? ' ' + U.day(m.playedOn) : '') : (A.has && B.has ? 'Da giocare' : 'In attesa delle coppie');
+      var head = 36 * k, foot = 34 * k, hh = head + A.h + B.h + foot + 10 * k;
+      return { h: hh, draw: function (ctx, x0, y) {
+        ctx.textAlign = 'left'; font(ctx, 22 * k, 800); ctx.fillStyle = C.night; ctx.fillText(m.slot, x0 + pad, y + 26 * k);
+        var sw0 = ctx.measureText(m.slot).width; font(ctx, 21 * k, 500); ctx.fillStyle = C.muted; ctx.fillText('  ·  ' + status, x0 + pad + sw0, y + 26 * k);
+        var yy = y + head, bx = x0 + W - pad - boxW;
+        [[A, 'A', 0], [B, 'B', 1]].forEach(function (sd) {
+          var o = sd[0], win = played && m.winner === sd[1], i = sd[2], ty = yy + (o.h - o.nl.lines.length * o.nl.size * 1.2) / 2 + o.nl.size * 0.95;
+          ctx.fillStyle = win ? C.sun : C.line; rr(ctx, x0 + pad - 18 * k, yy + 7 * k, 6 * k, o.h - 14 * k, 3 * k); ctx.fill();
+          ctx.textAlign = 'left'; ctx.fillStyle = o.has ? (win ? C.ink : '#3a4a5c') : C.muted; font(ctx, o.nl.size, o.has ? (win ? 700 : 600) : 500);
+          o.nl.lines.forEach(function (l, j) { ctx.fillText(l, x0 + pad, ty + j * o.nl.size * 1.2); });
+          if (win) { var mw = Math.max.apply(null, o.nl.lines.map(function (l) { font(ctx, o.nl.size, 700); return ctx.measureText(l).width; })); ctx.fillStyle = C.ok; font(ctx, 28 * k, 800); ctx.fillText('✓', x0 + pad + Math.min(nameW, mw) + 10 * k, ty); }
+          if (played) {
+            var by = yy + (o.h - 46 * k) / 2;
+            m.score.sets.forEach(function (st, si) { var w = st[i] > st[1 - i]; ctx.fillStyle = w ? C.night : C.soft; rr(ctx, bx + si * (bw + gap), by, bw, 46 * k, 9 * k); ctx.fill(); ctx.fillStyle = w ? '#ffffff' : '#5b6b7d'; ctx.textAlign = 'center'; font(ctx, 30 * k, 800); ctx.fillText(String(st[i]), bx + si * (bw + gap) + bw / 2, by + 34 * k); });
+            if (stb) { var w2 = stb[i] > stb[1 - i], sx = bx + (bw + gap) * 2; if (w2) { ctx.fillStyle = C.sun; rr(ctx, sx, by, sw, 46 * k, 9 * k); ctx.fill(); } else { ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#c5d3df'; ctx.lineWidth = 2.5 * k; rr(ctx, sx + 2, by + 2, sw - 4, 46 * k - 4, 9 * k); ctx.fill(); ctx.stroke(); } ctx.fillStyle = C.ink; ctx.textAlign = 'center'; font(ctx, 26 * k, 800); ctx.fillText(String(stb[i]), sx + sw / 2, by + 33 * k); }
+          } else { ctx.textAlign = 'right'; font(ctx, 20 * k, 500); ctx.fillStyle = C.muted; ctx.fillText(o.has ? (o.tm.label || '') : 'da determinare', x0 + W - pad, ty); }
+          yy += o.h;
+        });
+        font(ctx, 20 * k, 500); ctx.fillStyle = C.muted; ctx.textAlign = 'left'; ctx.fillText('→ ' + prog, x0 + pad, yy + 28 * k);
+        if (!last) { ctx.fillStyle = C.line; ctx.fillRect(x0 + pad, y + hh - 1, W - pad * 2, 1.5); }
       } };
     };
-    if (po.champion) blocks.push({ title: 'Vincitrice del torneo', right: '', accent: C.sun, items: [line('', po.champion.name, true)] });
-    if (po.qualifiers.length) blocks.push({ title: 'Qualificate', right: '', accent: C.brand, keepTogether: true,
-      items: po.qualifiers.map(function (q, i) { return line(q.label || (q.pos + 'ª ' + q.groupLabel), q.team ? q.team.name : null, i === po.qualifiers.length - 1); }) });
-    (po.rounds || []).forEach(function (r) {
-      var playedList = r.matches.filter(function (m) { return m.state === 'GIOCATO'; }).map(function (m) { return { m: m, g: { official: false } }; });
-      var open = r.matches.filter(function (m) { return m.state !== 'GIOCATO'; });
-      var items = playedList.length ? resultsBlock(mc, '', playedList, null, W, k, report).items : [];
-      open.forEach(function (m, i) { items.push(line(m.a.label, m.a.name, false)); items.push(line(m.b.label, m.b.name, i === open.length - 1)); });
-      blocks.push({ title: r.name, right: playedList.length + ' di ' + r.matches.length + ' giocati', accent: C.terra, items: items });
-    });
     if (!po.configured) {
       font(mc, 24 * k, 400);
       var ll = wrap(mc, 'Accoppiamenti e formato della fase finale: da confermare dalla direzione. Nessun incrocio è ufficiale.', W - pad * 2);
       blocks.push({ title: 'Tabellone', right: '', accent: C.terra, items: [{ h: 24 * k + ll.length * 32 * k, draw: function (ctx, x, y) { font(ctx, 24 * k, 400); ctx.fillStyle = C.muted; ctx.textAlign = 'left'; ll.forEach(function (l, i) { ctx.fillText(l, x + pad, y + 26 * k + i * 32 * k); }); } }] });
+      return blocks;
     }
+    rounds.forEach(function (r, ri) {
+      var played = r.matches.filter(function (m) { return m.state === 'GIOCATO'; }).length;
+      var items = r.matches.map(function (m, i) { return card(m, r, i === r.matches.length - 1 && !(ri === rounds.length - 1 && po.champion)); });
+      if (ri === rounds.length - 1 && po.champion) {
+        var nl = nameLines(mc, po.champion.name, W - pad * 2, 40 * k, 24 * k, 800, report), hh = 56 * k + nl.lines.length * nl.size * 1.2 + 16 * k;
+        items.push({ h: hh, draw: function (ctx, x, y) { ctx.fillStyle = C.sun; rr(ctx, x + pad - 10 * k, y + 8 * k, W - pad * 2 + 20 * k, hh - 16 * k, 16 * k); ctx.fill(); ctx.textAlign = 'left'; ctx.fillStyle = C.night; font(ctx, 22 * k, 800); ctx.fillText('VINCITORE DEL TORNEO', x + pad + 6 * k, y + 40 * k);
+          font(ctx, nl.size, 800); nl.lines.forEach(function (l, i) { ctx.fillText(l, x + pad + 6 * k, y + 56 * k + nl.size * 0.95 + i * nl.size * 1.2); }); } });
+      }
+      blocks.push({ title: r.name, right: played + ' di ' + r.matches.length + ' giocati', accent: C.terra, keepTogether: true, items: items });
+    });
     return blocks;
   }
 
@@ -1494,6 +1543,7 @@ window.PCPDemoShow = function (which) {
     } else {
       title = t.name + ' · Fase finale';
       blocks = playoffBlocks(scratch, t, cw, k, report);
+      if (!o.kicker && t.playoff.configured && t.playoff.rounds && t.playoff.rounds.length) o.kicker = t.playoff.rounds.map(function (r) { return r.name; }).join('  ›  ');
     }
     var headH = 250, footH = 84, titleH = 80 * k, gapB = 26, top0 = headH + 30, hasSp = !!(o.sponsorImgs && o.sponsorImgs.length), spBandH = hasSp ? (H >= 1800 ? 168 : 140) : 0, maxY = H - footH - (hasSp ? spBandH + 44 : o.demo ? 72 : 24);
     var pal = (o.catColor !== false && t && CAT[t.id]) || { bg: C.bg, deep: C.deep };
@@ -1562,6 +1612,7 @@ window.PCPDemoShow = function (which) {
         var yy = sg.y + titleH;
         for (var i = sg.from; i < sg.to; i++) { sg.b.items[i].draw(ctx, M, yy); yy += sg.b.items[i].h; }
         ctx.restore();
+        report.contentBottom = Math.max(report.contentBottom || 0, sg.y + sg.h); (report.pageBottoms = report.pageBottoms || [])[pi] = Math.max((report.pageBottoms[pi] || 0), sg.y + sg.h);
       });
       // sponsor / partner (facoltativi): loghi su targa bianca, sopra il piè di pagina
       // stesso trattamento della card del risultato: fascia chiara a tutta larghezza utile, logo originale centrato, proporzioni intatte
@@ -1683,7 +1734,7 @@ window.PCPDemoShow = function (which) {
   }
   function renderChrome() {
     var r = route(), t = S.snap && r.t ? findT(r.t) : null, g = t && r.g ? findG(t, r.g) : null;
-    U.header(hdr, { title: 'Elba Winter Championship', sub: 'Risultati e classifiche', test: S.snap && S.snap.meta.env !== 'PROD', home: { href: U.href() }, sponsor: S.snap ? U.sponsorOf(S.snap) : null,
+    U.header(hdr, { title: 'Elba Winter\nChampionship', sub: '', test: S.snap && S.snap.meta.env !== 'PROD', home: { href: U.href() }, sponsor: S.snap ? U.sponsorOf(S.snap) : null,
       refresh: { onclick: function () { load(false); }, busy: S.busy, alert: S.stale,
         label: S.busy ? '…' : S.stale ? 'Non in linea' : S.fetchedAt ? U.clock(S.fetchedAt) : '',
         full: S.fetchedAt ? 'Ultimo aggiornamento: ' + U.when(S.fetchedAt) : '' } });
@@ -1959,11 +2010,11 @@ window.PCPDemoShow = function (which) {
     var pick = function () { var f = document.getElementById('exp-ph'); if (f) f.click(); };
     var place = function (el, st2) { Object.keys(st2).forEach(function (k2) { el.style[k2] = st2[k2]; }); return el; }; // posizione via CSSOM (compatibile con la CSP)
     var cl = function (v) { return Math.round(Math.min(1, Math.max(0, v)) * 1000) / 1000; };
-    var zoomTo = function (z) { z = Math.round(Math.min(3, Math.max(1, z)) * 100) / 100; if (z !== E.zoom) again({ zoom: z }); };
+    var zoomTo = function (z) { S.photoMoved = true; z = Math.round(Math.min(3, Math.max(1, z)) * 100) / 100; if (z !== E.zoom) again({ zoom: z }); };
     var img = h('img', { class: 'pick', src: im.url, width: im.width, height: im.height, draggable: 'false', alt: 'Anteprima della card dell\'incontro', ondragstart: function (ev) { ev.preventDefault(); } });
     var drag = E.photo ? place(h('div', { class: 'phdrag', role: 'img', 'aria-label': 'Trascina per spostare la foto', title: 'Trascina per spostare la foto',
       onpointercancel: function () { st = null; },
-      onpointerdown: function (ev) { st = { x: ev.clientX, y: ev.clientY, k: im.width / ev.currentTarget.parentNode.getBoundingClientRect().width }; ev.preventDefault(); try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (e) { /* facoltativo */ } },
+      onpointerdown: function (ev) { S.photoMoved = true; var hn = ev.currentTarget.parentNode.querySelector('.phtip'); if (hn) hn.remove(); st = { x: ev.clientX, y: ev.clientY, k: im.width / ev.currentTarget.parentNode.getBoundingClientRect().width }; ev.preventDefault(); try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (e) { /* facoltativo */ } },
       onpointermove: function (ev) { if (!st) return; ev.currentTarget.style.transform = 'translate(' + (ev.clientX - st.x) + 'px,' + (ev.clientY - st.y) + 'px)'; ev.currentTarget.classList.add('dragging'); },
       onpointerup: function (ev) {
         if (!st) return; var s0 = st; st = null; ev.currentTarget.style.transform = ''; ev.currentTarget.classList.remove('dragging');
@@ -1974,14 +2025,15 @@ window.PCPDemoShow = function (which) {
         h('button', { class: 'phbtn', type: 'button', onclick: pick }, U.icon('camera', 18), h('span', null, 'Cambia')),
         h('button', { class: 'phbtn sq', type: 'button', 'aria-label': 'Riduci', disabled: E.zoom <= 1, onclick: function () { zoomTo(E.zoom - 0.25); } }, '−'),
         h('button', { class: 'phbtn sq', type: 'button', 'aria-label': 'Ingrandisci', disabled: E.zoom >= 3, onclick: function () { zoomTo(E.zoom + 0.25); } }, '+'),
-        h('button', { class: 'phbtn', type: 'button', onclick: function () { again({ zoom: 1, px: 0.5, py: 0.5 }); } }, h('span', null, 'Reimposta'))), { left: box.left, top: box.top, width: box.width, height: box.height })
+        h('button', { class: 'phbtn', type: 'button', onclick: function () { S.photoMoved = true; again({ zoom: 1, px: 0.5, py: 0.5 }); } }, h('span', null, 'Reimposta'))), { left: box.left, top: box.top, width: box.width, height: box.height })
       : place(h('button', { class: 'phadd', type: 'button', onclick: pick },
         h('span', { class: 'phic', 'aria-hidden': 'true' }, U.icon('camera', 34), h('b', null, '+')), h('strong', null, 'Tocca per aggiungere una foto'), h('span', { class: 'phsub' }, 'Scegli dalla galleria')), box);
+    var hint = E.photo && !S.photoMoved ? place(h('div', { class: 'phtip', 'aria-hidden': 'true' }, h('span', { class: 'phtipi' }, h('span', { class: 'phg' }, '✥'), 'Trascina per spostare')), { left: box.left, top: box.top, width: box.width }) : null;
     var spBtn = sr ? place(h('button', { class: 'spzone' + (E.spPanel ? ' on' : ''), type: 'button', 'aria-label': 'Sponsor: modifica', 'aria-expanded': E.spPanel ? 'true' : 'false', onclick: function () { E.spPanel = !E.spPanel; render(); } }, h('span', null, 'Sponsor')),
       { left: pct(sr.x, im.width), top: pct(sr.y, im.height), width: pct(sr.w, im.width), height: pct(sr.h, im.height) }) : null;
     var spPanel = E.spPanel ? h('div', { class: 'sppanel', role: 'dialog', 'aria-label': 'Sponsor dell\'immagine' }, ctl.sponsorControls(function () { E.spPanel = false; render(); })) : null;
     // il contenitore ha esattamente la misura dell'immagine mostrata: le zone toccabili coincidono con l'apertura
-    return place(h('div', { class: 'pickwrap', 'data-zoom': String(E.zoom), 'data-px': String(E.px), 'data-py': String(E.py) }, img, drag, tools, spBtn, spPanel), { width: 'min(100%, calc(min(64vh, 560px) * ' + im.width + ' / ' + im.height + '))' });
+    return place(h('div', { class: 'pickwrap', 'data-zoom': String(E.zoom), 'data-px': String(E.px), 'data-py': String(E.py) }, img, drag, hint, tools, spBtn, spPanel), { width: 'min(100%, calc(min(64vh, 560px) * ' + im.width + ' / ' + im.height + '))' });
   }
 
   /* Navigazione rapida tra le immagini: categoria, poi girone / fase finale della categoria scelta. */
@@ -2003,7 +2055,7 @@ window.PCPDemoShow = function (which) {
       S.expPage = 0; var flash = S.flash; S.flash = null; releaseExp(); S.exp = { key: key, msg: flash || null, format: isMatch ? 'story' : spec.o.scope === 'riepilogo' || spec.o.scope === 'tournament' ? 'riepilogo' : 'social', res: null, working: false, sp: def ? def.id : '', sp2: '', spPos: 'bottom', spBig: false, spRing: false, photo: null, zoom: 1, px: 0.5, py: 0.5 };
     }
     var E = S.exp, X = root.PCPExport;
-    var again = function (ch) { var keep = { key: key, only: E.only || '', format: E.format, res: null, msg: null, working: false, sp: E.sp, sp2: E.sp2, spPos: E.spPos, spBig: E.spBig, spRing: E.spRing, photo: E.photo, zoom: E.zoom, px: E.px, py: E.py, moving: E.moving, spPanel: E.spPanel, prev: E.res || E.prev || null }; Object.keys(ch).forEach(function (k2) { keep[k2] = ch[k2]; }); if (E.res && E.prev) freeRes(E.prev); S.exp = keep; render(); }; // l'anteprima precedente resta visibile finché la nuova è pronta: la pagina non salta
+    var again = function (ch) { var keep = { key: key, only: E.only || '', format: E.format, res: null, msg: null, working: false, sp: E.sp, sp2: E.sp2, spPos: E.spPos, spBig: E.spBig, spRing: E.spRing, photo: E.photo, zoom: E.zoom, px: E.px, py: E.py, moving: E.moving, spPanel: E.spPanel, spOpen: E.spOpen, prev: E.res || E.prev || null }; Object.keys(ch).forEach(function (k2) { keep[k2] = ch[k2]; }); if (E.res && E.prev) freeRes(E.prev); S.exp = keep; render(); }; // l'anteprima precedente resta visibile finché la nuova è pronta: la pagina non salta
     var spSel = [E.sp, E.sp2].filter(function (id, i, a) { return id && a.indexOf(id) === i; }).map(function (id) { return spItems.filter(function (x) { return x.id === id; })[0]; }).filter(Boolean);
     var RS = E.res || E.prev; // immagini mostrate: quelle pronte o, mentre si rigenerano, le precedenti
     if (!E.res && !E.working) {
@@ -2014,8 +2066,8 @@ window.PCPDemoShow = function (which) {
         .catch(function () { E.working = false; E.msg = 'Non è stato possibile creare le immagini su questo dispositivo.'; if (S.exp === E) render(); });
     }
     var sponsorControls = function (close) {
-      var sel = h('select', { class: 'in', id: 'exp-sp', onchange: function () { again({ sp: sel.value }); } }, [h('option', { value: '' }, 'Nessun logo')].concat(spItems.map(function (x) { return h('option', { value: x.id }, x.name + (x.main ? ' (principale)' : '')); }))); sel.value = E.sp || '';
-      return [h('label', { class: 'f', for: 'exp-sp' }, isMatch ? 'Sponsor / partner' : 'Sponsor / partner nell\'immagine (facoltativo)'), sel,
+      var sel = h('select', { class: 'in', id: 'exp-sp', onchange: function () { again({ sp: sel.value }); } }, [h('option', { value: '' }, isMatch ? 'Nessun logo' : 'Nessuno')].concat(spItems.map(function (x) { return h('option', { value: x.id }, x.name + (x.main ? ' (principale)' : '')); }))); sel.value = E.sp || '';
+      return [h('label', { class: 'f', for: 'exp-sp' }, isMatch ? 'Sponsor / partner' : 'Sponsor nell\'immagine'), sel,
         isMatch && spItems.length > 1 && E.sp ? [h('label', { class: 'f', for: 'exp-sp2' }, 'Secondo sponsor (i due loghi si dividono la larghezza)'),
           (function () { var s2 = h('select', { class: 'in', id: 'exp-sp2', onchange: function () { again({ sp2: s2.value }); } }, [h('option', { value: '' }, 'Nessun secondo logo')].concat(spItems.filter(function (x) { return x.id !== E.sp; }).map(function (x) { return h('option', { value: x.id }, x.name); }))); s2.value = E.sp2 || ''; return s2; })()] : null,
         isMatch && E.sp ? [h('label', { class: 'f', for: 'exp-pos' }, 'Posizione'),
@@ -2029,14 +2081,39 @@ window.PCPDemoShow = function (which) {
     var canShare = function (file) { try { return !!(navigator.canShare && navigator.canShare({ files: [file] })); } catch (e) { return false; } };
     var say = function (m) { E.msg = m; render(); };
     var anyShare = false; try { anyShare = !!(E.res && canShare(new File([E.res.images[0].blob], 'x.png', { type: 'image/png' }))); } catch (e) { anyShare = false; }
+    var N0 = RS ? RS.images.length : 0, cur0 = Math.min(Math.max(0, S.expPage || 0), Math.max(0, N0 - 1)), im0 = RS && RS.images[cur0], file0 = null;
+    try { file0 = im0 ? new File([im0.blob], im0.name, { type: 'image/png' }) : null; } catch (e) { file0 = null; }
+    var shareOk = !!(file0 && canShare(file0));
+    var expBar = function () {
+      var fmts = Object.keys(X.FORMATS).filter(function (id) { var f = X.FORMATS[id]; return (!f.only || [].concat(f.only).indexOf(spec.o.scope) >= 0) && [].concat(f.not || []).indexOf(spec.o.scope) < 0; });
+      return h('div', { class: 'expbar', role: 'group', 'aria-label': 'Formato e condivisione' },
+        h('div', { class: 'seg', role: 'group', 'aria-label': 'Formato' }, fmts.map(function (id) { var f = X.FORMATS[id];
+          return h('button', { class: 'chip', type: 'button', title: f.label + ' (' + f.w + '×' + f.h + ')', 'aria-label': f.label + ', ' + f.w + '×' + f.h, 'aria-pressed': E.format === id ? 'true' : 'false', onclick: function () { if (E.format === id) return; again({ format: id }); } }, f.short || f.label); })),
+        shareOk ? h('button', { class: 'btn', type: 'button', disabled: !E.res, onclick: function () {
+          navigator.share({ files: [file0], title: 'Elba Winter Championship' }).catch(function (e) { if (e && e.name !== 'AbortError') say('Condivisione non riuscita: usa "Scarica PNG".'); });
+        } }, U.icon('share', 22), h('span', null, 'Condividi')) : null,
+        h('button', { class: 'btn dl' + (shareOk ? ' sec2' : ''), type: 'button', disabled: !E.res, 'aria-label': 'Scarica PNG', title: 'Scarica PNG', onclick: function () {
+          U.saveFile(im0.name, im0.blob).then(function (how) { say(how === 'saved' ? 'Immagine salvata.' : 'Download avviato: ' + im0.name); })
+            .catch(function (e) { say(e && e.code === 'declined' ? 'Salvataggio annullato.' : 'Salvataggio non riuscito: tieni premuto sull\'immagine e scegli "Salva".'); });
+        } }, U.icon('download', 22), h('span', { class: 'lbl' }, 'Scarica PNG')));
+    };
+    var spBlock = function () {
+      if (!spItems.length) return h('p', { class: 'sub spnone' }, 'Nessuno sponsor configurato: per avere un logo nelle immagini va caricato un logo reale in Amministrazione → Sponsor e partner.');
+      var cur = spItems.filter(function (x) { return x.id === E.sp; })[0], open = !!E.spOpen;
+      return h('div', { class: 'spsel' },
+        h('button', { class: 'spbtn', type: 'button', 'aria-expanded': open ? 'true' : 'false', 'aria-controls': 'sp-panel', onclick: function () { E.spOpen = !E.spOpen; render(); } },
+          h('span', null, 'Sponsor: ', h('strong', null, cur ? cur.name : 'Nessuno')), h('span', { class: 'car', 'aria-hidden': 'true' }, open ? '▴' : '▾')),
+        open ? h('div', { class: 'sppanel2', id: 'sp-panel' }, sponsorControls(function () { E.spOpen = false; render(); }), h('p', { class: 'sub' }, 'La scelta vale solo per queste immagini: non cambia gli sponsor del torneo.')) : null);
+    };
     return [
       h('a', { class: 'back', href: spec.back }, '‹ ' + spec.backLabel),
       spec.o.t ? pageTitle(spec.o.t, 'Esporta immagini') : h('h1', { class: 'h1' }, 'Esporta immagini'),
       exportNav(spec),
-      h('p', { class: 'sub' }, spec.title + ' — con logo e colori del club, solo risultati ufficiali.'),
       E.msg ? h('div', { class: 'note info', role: 'status' }, E.msg) : null,
+      expBar(),
+      !isMatch ? spBlock() : null,
       !(E.res || E.prev) ? h('div', { class: 'card empty', role: 'status' }, 'Creo le immagini…') : [
-        h('p', { class: 'sub', role: 'status' }, !E.res ? 'Aggiorno l\'anteprima…' : RS.images.length === 1 ? '1 immagine' : RS.images.length + ' immagini: il contenuto è diviso su più pagine per non tagliare nulla.'),
+        h('p', { class: 'sub', role: 'status' }, !E.res ? 'Aggiorno l\'anteprima…' : RS.images.length === 1 ? '1 immagine' : RS.images.length + ' immagini (contenuto diviso su più pagine)'),
         (function () {
           var N = RS.images.length, cur = Math.min(Math.max(0, S.expPage || 0), N - 1), im = RS.images[cur], i = cur;
           var go = function (d) { S.expPage = (cur + d + N) % N; render(); };
@@ -2047,14 +2124,7 @@ window.PCPDemoShow = function (which) {
               h('button', { class: 'btn sec2 car', type: 'button', 'aria-label': 'Immagine successiva', onclick: function () { go(1); } }, '›')) : null,
             h('section', { class: 'card exp' + (E.res ? '' : ' updating') },
             isMatch && RS.report.aperture ? photoPicker(im, E, again, RS, ctl) : h('img', { src: im.url, alt: 'Anteprima immagine ' + (i + 1) + ' di ' + N + ': ' + spec.title, width: im.width, height: im.height }),
-            !E.res ? null : h('div', { class: 'btnrow two' },
-              file && canShare(file) ? h('button', { class: 'btn', type: 'button', onclick: function () {
-                navigator.share({ files: [file], title: 'Elba Winter Championship' }).catch(function (e) { if (e && e.name !== 'AbortError') say('Condivisione non riuscita: usa "Scarica PNG".'); });
-              } }, U.icon('share', 22), h('span', null, 'Condividi…')) : null,
-              h('button', { class: 'btn' + (file && canShare(file) ? ' sec2' : ''), type: 'button', onclick: function () {
-                U.saveFile(im.name, im.blob).then(function (how) { say(how === 'saved' ? 'Immagine salvata.' : 'Download avviato: ' + im.name); })
-                  .catch(function (e) { say(e && e.code === 'declined' ? 'Salvataggio annullato.' : 'Salvataggio non riuscito: tieni premuto sull\'immagine e scegli "Salva".'); });
-              } }, U.icon('download', 22), h('span', null, 'Scarica PNG')))),
+            null),
             N > 1 && E.res ? h('div', { class: 'btnrow' }, h('button', { class: 'btn sec2', type: 'button', onclick: function () {
               Promise.all(RS.images.map(function (x) { return x.blob.arrayBuffer().then(function (ab) { return { name: x.name, data: new Uint8Array(ab) }; }); })).then(function (files) {
                 var zname = 'ewc-' + (spec.o.t ? U.tSlug(spec.o.t.id) : 'immagini') + (spec.o.g && spec.o.scope !== 'match' ? '-' + U.gSlug(spec.o.g.id) : '') + '-' + N + '-immagini.zip';
@@ -2063,17 +2133,11 @@ window.PCPDemoShow = function (which) {
             } }, U.icon('download', 22), h('span', null, 'Scarica tutte (ZIP, ' + N + ' immagini)'))) : null];
         })(),
         h('p', { class: 'sub' }, (anyShare ? '"Condividi…" apre il menu del telefono, da cui scegli WhatsApp, Instagram o un\'altra app installata. ' : 'Dopo il salvataggio l\'immagine si condivide dalla galleria o da WhatsApp e Instagram. ') + 'In alternativa tieni premuto sull\'immagine per salvarla.')],
-      h('div', { class: 'chips two', role: 'group', 'aria-label': 'Formato' }, Object.keys(X.FORMATS).filter(function (id) { var f = X.FORMATS[id]; return (!f.only || [].concat(f.only).indexOf(spec.o.scope) >= 0) && f.not !== spec.o.scope; }).map(function (id) {
-        var f = X.FORMATS[id];
-        return h('button', { class: 'chip col', type: 'button', 'aria-pressed': E.format === id ? 'true' : 'false', onclick: function () { if (E.format === id) return; again({ format: id }); } },
-          h('strong', null, f.label), h('span', { class: 'sub' }, f.w + '×' + f.h));
-      })),
       spec.o.scope === 'riepilogo' ? h('div', { class: 'chips five', role: 'group', 'aria-label': 'Tornei da includere' }, [['', 'Tutti']].concat(spec.o.ts.map(function (tt) { return [tt.id, tt.name]; })).map(function (c) {
         return h('button', { class: 'chip', type: 'button', 'aria-pressed': (E.only || '') === c[0] ? 'true' : 'false', onclick: function () { if ((E.only || '') !== c[0]) again({ only: c[0] }); } }, c[1]);
       })) : null,
-      !isMatch && spItems.length ? h('div', { class: 'card' }, sponsorControls(null)) : null,
       isMatch && spItems.length && !E.sp ? h('div', { class: 'card' }, sponsorControls(null)) : null,
-      isMatch ? h('div', { class: 'card ph' }, h('input', { class: 'sr', id: 'exp-ph', type: 'file', accept: 'image/*', 'aria-label': 'Scegli la fotografia dell\'incontro', onchange: function (ev) { var f = ev.target.files && ev.target.files[0]; if (!f) return; if (E.photo) URL.revokeObjectURL(E.photo); again({ photo: URL.createObjectURL(f), zoom: 1, px: 0.5, py: 0.5 }); } }),
+      isMatch ? h('div', { class: 'card ph' }, h('input', { class: 'sr', id: 'exp-ph', type: 'file', accept: 'image/*', 'aria-label': 'Scegli la fotografia dell\'incontro', onchange: function (ev) { var f = ev.target.files && ev.target.files[0]; if (!f) return; if (E.photo) URL.revokeObjectURL(E.photo); S.photoMoved = false; again({ photo: URL.createObjectURL(f), zoom: 1, px: 0.5, py: 0.5 }); } }),
         h('p', { class: 'sub' }, 'Foto: tocca l\'area foto dell\'anteprima, poi trascinala per inquadrare e usa + / − per ingrandire. Resta sul tuo dispositivo e non viene inviata a nessuno. Condividila solo se le persone ritratte sono d\'accordo.'),
         E.photo ? h('button', { class: 'btn sec2', type: 'button', onclick: function () { URL.revokeObjectURL(E.photo); again({ photo: null, zoom: 1, px: 0.5, py: 0.5 }); } }, 'Togli la foto') : null,
         E.sp ? h('p', { class: 'sub' }, 'Sponsor: tocca l\'area Sponsor nell\'anteprima per cambiarlo, spostarlo o toglierlo.') : null) : null,
