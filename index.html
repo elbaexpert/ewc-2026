@@ -491,6 +491,89 @@ html.ovl-open { overflow: hidden; }
 .phbtn { white-space: nowrap; font-size: 13px; padding: 4px 10px; gap: 5px; }
 .pickwrap img.pick { display: block; width: 100%; height: auto; max-height: none; }
 
+/* ============ 9. RIFINITURE UX (classifiche compatte, Condividi, sponsor in intestazione, editor immagine) ============ */
+/* Intestazione: sponsor principale al centro. Desktop: centrato sulla riga; telefono: seconda riga centrata, sotto titolo e pulsanti. */
+.top.hassp { flex-wrap: wrap; }
+.hsp { display: flex; align-items: center; justify-content: center; pointer-events: none; }
+.hsp img { display: block; height: 26px; max-width: 150px; width: auto; object-fit: contain; }
+@media (max-width: 719px) { .top.hassp { padding-bottom: 8px; } .hsp { order: 5; flex: 0 0 100%; padding-top: 2px; } }
+@media (min-width: 720px) {
+  .top.hassp { flex-wrap: nowrap; }
+  .hsp { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -52%); } .hsp img { height: 38px; max-width: 200px; }
+  .top.hassp .httl { padding-right: 210px; }
+}
+/* Classifica: riga bassa, posizione piccola, nomi larghi, colonne numeriche allineate (intestazione e valori centrati sulla stessa colonna) */
+table.st { table-layout: fixed; }
+table.st th { padding: 3px 0 4px; font-size: 13px; text-align: center; }
+table.st td { padding: 0; vertical-align: middle; font-size: 15px; }
+table.st td.l, table.st td.c-pos, table.st td.c-pt { vertical-align: middle; padding-top: 0; }
+table.st .c-pos { width: 38px; } table.st .c-n { width: 30px; } table.st .c-pt { width: 44px; } table.st .c-dg { width: 44px; }
+table.st th.c-pos, table.st td.c-pos { padding-left: 8px; text-align: left; }
+table.st th.l { padding-left: 4px; } table.st td.l { padding-right: 6px; }
+.rk { min-width: 26px; height: 26px; padding: 0 3px; font-size: 14px; border-radius: 7px; }
+.ptv { min-width: 34px; height: 26px; padding: 0 5px; font-size: 16px; border-radius: 7px; }
+tr.qd .rk { background: var(--tc); color: #fff; }
+tr.prov .rk { background: var(--tc-bg); color: var(--tc); box-shadow: inset 0 0 0 1.5px var(--tc); }
+tr.zone .rk { background: transparent; color: inherit; }
+tr.zone2 .rk { background: #fff; color: var(--tc); box-shadow: inset 0 0 0 1.5px var(--tc); border-style: dashed; }
+tr.zone2 .rk { box-shadow: none; outline: 1.5px dashed var(--tc); outline-offset: -1.5px; }
+.legend .key.k3 { background: var(--tc-bg); box-shadow: inset 0 0 0 1.5px var(--tc); }
+.legend .key.k2 { background: #fff; box-shadow: none; outline: 1.5px dashed var(--tc); outline-offset: -1.5px; }
+.rowbtn { min-height: 44px; display: flex; flex-direction: column; justify-content: center; }
+table.st td.l .more { padding-bottom: 6px; }
+.nrow { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.nrow .team { flex: 1 1 auto; min-width: 0; white-space: normal !important; overflow: visible !important; line-height: 1.15; }
+.nrow .team .pl { display: block !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nrow .team .sep { display: none; } .nrow .team .pl:not(:last-of-type)::after { content: " /"; color: var(--muted); font-weight: 400; }
+.nrow .badge.chk { min-width: 24px; text-align: center; padding: 1px 5px; }
+.nrow .badge { flex: none; margin: 0; padding: 1px 7px; font-size: 13px; line-height: 1.35; border-radius: 9px; white-space: nowrap; }
+.more .fn { font-weight: 700; color: var(--ink); }
+.cols > div { min-width: 0; }
+@media (min-width: 900px) { .cols { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+/* Riga dei gironi con Condividi all'estrema destra */
+.shrow { display: flex; align-items: flex-start; gap: 8px; margin: 0 0 12px; }
+.shrow > nav { flex: 1 1 auto; min-width: 0; } .shrow .chips { margin: 0; }
+.shrow .topshare { flex: none; margin: 0; min-height: 40px; padding: 0 12px; gap: 6px; align-self: flex-start; }
+@media (max-width: 479px) { .shrow .topshare { min-width: 44px; min-height: 44px; padding: 0; justify-content: center; } .shrow .topshare .tsl { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); } }
+/* Editor immagine: trascinamento diretto sull'anteprima, +/−, area Sponsor selezionabile */
+.phdrag { position: absolute; touch-action: none; cursor: grab; border-radius: 12px; background: transparent; }
+.phdrag.dragging { cursor: grabbing; outline: 3px solid var(--sun, #F2B705); outline-offset: -3px; }
+.phtools { justify-content: flex-end; align-items: flex-end; gap: 6px; padding: 8px; }
+.phbtn.sq { min-width: 44px; padding: 0; justify-content: center; font: 800 22px/1 var(--display); } .phbtn:disabled { opacity: .45; cursor: default; }
+.spzone { position: absolute; display: flex; align-items: center; justify-content: center; border: 2px dashed rgba(248,188,58,.9); border-radius: 18px; background: rgba(248,188,58,.08); color: #fff; font: 700 14px/1 var(--body, inherit); cursor: pointer; }
+.spzone span { background: rgba(4,32,58,.78); padding: 4px 10px; border-radius: 14px; opacity: 0; transition: opacity .12s; }
+.spzone:hover span, .spzone:focus-visible span, .spzone.on span { opacity: 1; } .spzone:focus-visible { outline: 3px solid var(--sun, #F2B705); outline-offset: 2px; }
+.sppanel { position: absolute; left: 3%; right: 3%; bottom: 3%; max-height: 90%; overflow: auto; padding: 12px; border-radius: 16px; background: #fff; box-shadow: var(--e2, 0 10px 30px rgba(4,32,58,.35)); z-index: 3; }
+.sppanel .btn { margin-top: 8px; }
+.card.ph .sub { margin: 0 0 8px; }
+.phtools { align-content: flex-end; }
+/* --- Classifica: una riga per coppia, indicatori piccoli (nessun badge nel nome) --- */
+.nrow { display: none; }
+table.st td.l .team { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 15px; font-weight: 700; line-height: 1.2; }
+table.st td.l .team .pl { display: inline !important; }
+table.st td.l .team .sep { display: inline; }
+.rowbtn { min-height: 44px; display: flex; align-items: center; }
+.rowbtn .team { flex: 1 1 auto; min-width: 0; }
+table.st .c-pos { width: 40px; } table.st .c-n { width: 28px; } table.st .c-pt { width: 42px; } table.st .c-dg { width: 40px; }
+@media (max-width: 380px) { table.st td.l .team { font-size: 14px; } }
+tr.qd .rk { background: #17693f; color: #fff; box-shadow: none; }
+tr.prov .rk { background: #fff; color: #17693f; box-shadow: none; outline: 2px solid #17693f; outline-offset: -2px; }
+tr.out .rk { background: #e9edf1; color: #6a7683; }
+tr.out td.l .team, tr.out td { color: #6a7683; } tr.out .ptv { background: #7d8b99; }
+tr.zero .rk { background: transparent; color: var(--muted); }
+tr.zero td.l .team { font-weight: 600; color: #3a4a5c; }
+.legend .key { background: #17693f; } .legend .key.k3 { background: #fff; box-shadow: none; outline: 2px solid #17693f; outline-offset: -2px; }
+.legend .key.k4 { background: #e9edf1; box-shadow: inset 0 0 0 1px #aab4bf; }
+.rowbtn { flex-direction: row; justify-content: flex-start; align-items: center; text-align: left; }
+.expnav { margin: 0 0 10px; } .expnav .chips { margin-bottom: 8px; }
+.carnav { display: grid; grid-template-columns: 52px 1fr 52px; align-items: center; gap: 8px; text-align: center; margin: 6px 0; }
+.carnav .car { min-height: 48px; font: 800 28px/1 var(--display); padding: 0; }
+
+/* Demo privata: fascia sempre visibile */
+#testbar{position:fixed;top:0;left:0;right:0;z-index:99999;height:24px;line-height:24px;background:#b00020;color:#fff;font:700 12px/24px system-ui,sans-serif;text-align:center;letter-spacing:.02em;pointer-events:none}
+body.testmode{padding-top:24px}
+body.testmode .top{top:24px}
+
 </style>
 </head>
 <body>
@@ -755,8 +838,10 @@ window.PCPDemoShow = function (which) {
         BRAND.logo ? h('img', { src: BRAND.logo, alt: '', width: 600, height: 448 }) : icon('home', 26)),
       h('div', { class: 'httl' }, h('div', { class: 'title' }, o.title), h('div', { class: 'club' }, o.sub || '', o.test ? h('span', { class: 'testpill' }, 'TEST') : null)),
       o.refresh ? h('button', { class: 'hbtn upd' + (o.refresh.busy ? ' busy' : '') + (o.refresh.alert ? ' alert' : ''), type: 'button', onclick: o.refresh.onclick,
-        'aria-label': 'Aggiorna i dati. ' + (o.refresh.full || '') }, icon('refresh', 22), h('span', { class: 'updt' }, o.refresh.label || '')) : null
+        'aria-label': 'Aggiorna i dati. ' + (o.refresh.full || '') }, icon('refresh', 22), h('span', { class: 'updt' }, o.refresh.label || '')) : null,
+      o.sponsor && o.sponsor.image ? h('div', { class: 'hsp', title: 'Sponsor principale: ' + o.sponsor.name }, h('img', { src: o.sponsor.image, alt: o.sponsor.name, decoding: 'async' })) : null
     ]);
+    el.classList.toggle('hassp', !!(o.sponsor && o.sponsor.image));
   }
   /** Piè di pagina di ogni schermata: Instagram del club (discreto) e firma. */
   function footer(dataLine) {
@@ -799,6 +884,14 @@ window.PCPDemoShow = function (which) {
     IN_VERIFICA: ['warn', 'In verifica'], RITIRATA: ['out', 'Ritirata'], IN_ATTESA_PIAZZATE: ['', 'In attesa: migliori terze']
   };
 
+  /** Solo visualizzazione: le coppie con zero partite vanno dopo quelle che hanno giocato (posizione «–»); calcolo e dati non cambiano. */
+  function displayRows(g) {
+    var rows = g.rows || [];
+    var played = rows.filter(function (r) { return r.played > 0; });
+    if (!played.length || played.length === rows.length) return rows;
+    return played.concat(rows.filter(function (r) { return !(r.played > 0); }));
+  }
+  function isQ0(r) { return !!(r.qual && (r.qual.state === 'QUALIFICATA' || r.qual.state === 'QUALIFICATA_MATEMATICA')); }
   /** Classifica: 5 colonne strette, dettagli a espansione, mai scorrimento orizzontale. */
   function standings(g, openState, zone) {
     openState = openState || {}; zone = zone || {};
@@ -809,24 +902,26 @@ window.PCPDemoShow = function (which) {
           h('th', { class: 'c-dg', scope: 'col' }, h('abbr', { title: 'Differenza game' }, 'DG')))
       : h('tr', null, h('th', { class: 'l', scope: 'col' }, 'Coppia'), h('th', { class: 'c-n', scope: 'col' }, h('abbr', { title: 'Partite giocate' }, 'G')),
           h('th', { class: 'c-n', scope: 'col' }, h('abbr', { title: 'Vinte' }, 'V')), h('th', { class: 'c-n', scope: 'col' }, h('abbr', { title: 'Perse' }, 'P')));
-    var body = g.rows.map(function (r, idx) {
+    var body = displayRows(g).map(function (r, idx) {
       var q = r.qual && QUAL[r.qual.state], showQ = q && (g.started || r.withdrawn);
+      var isQ = isQ0(r), isOut = !!(r.qual && /^(ELIMINATA|RITIRATA)/.test(r.qual.state)) && (g.started || r.withdrawn), zero = !r.played;
       var det = h('div', { class: 'more', hidden: !openState[r.teamId] },
+        h('div', { class: 'fn' }, String(r.name).replace(/\s*\/\s*/g, ' / ')),
         h('div', null, 'Vinte ' + r.won + ' · Perse ' + r.lost + ' · Game ' + r.gf + '–' + r.gs + (r.stb ? ' · Super tie-break giocati ' + r.stb : '')),
         off && r.adminPts ? h('div', null, 'Di cui punti amministrativi (ritiro avversari): ' + r.adminPts) : null,
         off && r.ptsPending ? h('div', null, 'Punti in sospeso: +' + r.ptsPending + ' (regola da confermare)') : null,
+        showQ && q ? h('div', null, q[1].replace(/^✓ /, '')) : null,
         showQ && r.qual.text ? h('div', null, r.qual.text) : null,
+        r.tied && g.complete ? h('div', null, 'Parità da risolvere') : null,
         (r.flags || []).map(function (f) { return h('div', null, '⚠ ' + f.text); }));
       var btn = h('button', { class: 'rowbtn', type: 'button', 'aria-expanded': openState[r.teamId] ? 'true' : 'false',
         onclick: function () { var o = det.hidden; det.hidden = !o; openState[r.teamId] = o; btn.setAttribute('aria-expanded', o ? 'true' : 'false'); } },
-        team(r.name), h('span', { class: 'sr' }, ' — tocca per i dettagli'),
-        showQ ? h('div', null, h('span', { class: 'badge ' + q[0] }, q[1])) : null,
-        r.tied && g.complete ? h('div', null, h('span', { class: 'badge warn' }, 'Parità da risolvere')) : null);
-      var isQ = r.qual && (r.qual.state === 'QUALIFICATA' || r.qual.state === 'QUALIFICATA_MATEMATICA');
+        team(r.name), h('span', { class: 'sr' }, (showQ && q ? ' — ' + q[1].replace(/^✓ /, '') : '') + (r.tied && g.complete ? ' — parità da risolvere' : '') + ' — tocca per i dettagli'));
       if (!off) return h('tr', { class: r.withdrawn ? 'wd' : '' }, h('td', { class: 'l' }, btn, det), h('td', null, r.played), h('td', null, r.won), h('td', null, r.lost));
-      var inZone = g.started && zone.q && r.pos != null && !r.withdrawn && r.pos <= zone.q, inZone2 = g.started && zone.q && zone.extra && r.pos === zone.q + 1 && !r.withdrawn;
-      return h('tr', { class: (isQ ? 'q ' : '') + (inZone ? 'zone ' : '') + (inZone2 ? 'zone2 ' : '') + (g.started && zone.q && idx === zone.q - 1 ? 'cut ' : '') + (r.withdrawn ? 'wd' : '') },
-        h('td', { class: 'c-pos' }, h('span', { class: 'rk' }, r.pos == null ? '–' : r.pos + (r.tied ? '=' : ''))), h('td', { class: 'l' }, btn, det),
+      var inZone = g.started && zone.q && !zero && r.pos != null && !r.withdrawn && r.pos <= zone.q, inZone2 = g.started && zone.q && zone.extra && !zero && r.pos === zone.q + 1 && !r.withdrawn;
+      var lastQ = g.started && zone.q && !zero && r.pos === zone.q && !r.withdrawn;
+      return h('tr', { class: (isQ ? 'q qd ' : isOut ? 'out ' : inZone ? 'prov ' : '') + (inZone2 && !isQ && !isOut ? 'zone2 ' : '') + (lastQ ? 'cut ' : '') + (zero ? 'zero ' : '') + (r.withdrawn ? 'wd' : '') },
+        h('td', { class: 'c-pos' }, h('span', { class: 'rk' }, r.pos == null || zero ? '–' : r.pos + (r.tied ? '=' : ''))), h('td', { class: 'l' }, btn, det),
         h('td', null, r.played), h('td', { class: 'c-pt' }, h('span', { class: 'ptv' }, r.pts + (r.ptsPending ? '*' : ''))), h('td', null, (r.dg > 0 ? '+' : '') + r.dg));
     });
     return h('table', { class: 'st' + (off ? '' : ' unoff') }, h('caption', { class: 'sr' }, (off ? 'Classifica ' : 'Riepilogo non ufficiale ') + g.label), h('thead', null, head), h('tbody', null, body));
@@ -972,15 +1067,49 @@ window.PCPDemoShow = function (which) {
   }
 
   /* ---------- Regole in breve ---------- */
+  /** Unisce le due righe del punto di sconfitta (0–2 e super tie-break) in un'unica frase quando le soglie coincidono; altrimenti le lascia come sono. Solo testo: nessuna regola cambia. */
+  function mergeBrief(lines) {
+    var arr = (lines || []).slice(), iS = -1, i02 = -1, nS = null, n02 = null;
+    arr.forEach(function (x, i) {
+      var a = /^Sconfitta al super tie-break con almeno (\d+) game nei due set: 1 punto/.exec(x), b = /^Sconfitta 0-2 con almeno (\d+) game: 1 punto/.exec(x);
+      if (a) { iS = i; nS = a[1]; } if (b) { i02 = i; n02 = b[1]; }
+    });
+    if (iS >= 0 && i02 >= 0 && nS === n02) {
+      arr[iS] = 'Sconfitta con almeno ' + nS + ' game conquistati complessivamente nei primi due set: 1 punto, sia in caso di sconfitta 0–2 sia al super tie-break. I punti del super tie-break non sono conteggiati come game.';
+      arr.splice(i02, 1);
+    }
+    return arr;
+  }
   function rulesBrief(t) {
     var r = t.rules, open = r.open || [];
     return h('section', { class: 'card rules' }, h('h2', null, 'Regole in breve'),
       r.brief && r.brief.length
-        ? h('ul', { class: 'rl ok' }, r.brief.map(function (x) { return h('li', null, h('span', { class: 'mk', 'aria-hidden': 'true' }, '✓'), h('span', { class: 'sr' }, 'Confermata: '), x); }))
+        ? h('ul', { class: 'rl ok' }, mergeBrief(r.brief).map(function (x) { return h('li', null, h('span', { class: 'mk', 'aria-hidden': 'true' }, '✓'), h('span', { class: 'sr' }, 'Confermata: '), x); }))
         : h('p', { class: 'sub' }, 'Regolamento non ancora confermato: i risultati si registrano, nessuna classifica ufficiale.'),
       open.length ? h('details', null, h('summary', null, 'Da confermare (' + open.length + ')'),
         h('ul', { class: 'rl todo' }, open.map(function (x) { return h('li', null, h('span', { class: 'mk', 'aria-hidden': 'true' }, '?'), h('span', { class: 'sr' }, 'Da confermare: '), x); })),
         h('p', { class: 'sub' }, r.source + (r.version ? ' — versione ' + r.version : ''))) : null);
+  }
+
+  /** ZIP senza compressione (i PNG sono già compressi): files = [{ name, data: Uint8Array }] → Blob. */
+  var CRCT = null;
+  function crc32(u8) {
+    if (!CRCT) { CRCT = []; for (var n = 0; n < 256; n++) { var c = n; for (var k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; CRCT[n] = c >>> 0; } }
+    var crc = 0xFFFFFFFF; for (var i = 0; i < u8.length; i++) crc = CRCT[(crc ^ u8[i]) & 255] ^ (crc >>> 8); return (crc ^ 0xFFFFFFFF) >>> 0;
+  }
+  function zipBlob(files) {
+    var enc = new TextEncoder(), parts = [], central = [], off = 0, d = new Date(), dt = ((d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1)) & 0xFFFF, dd = (((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate()) & 0xFFFF;
+    var u16 = function (v) { return [v & 255, (v >>> 8) & 255]; }, u32 = function (v) { return [v & 255, (v >>> 8) & 255, (v >>> 16) & 255, (v >>> 24) & 255]; };
+    files.forEach(function (f) {
+      var nm = enc.encode(f.name), crc = crc32(f.data), sz = f.data.length;
+      var lh = new Uint8Array([].concat(u32(0x04034b50), u16(20), u16(0x0800), u16(0), u16(dt), u16(dd), u32(crc), u32(sz), u32(sz), u16(nm.length), u16(0)));
+      parts.push(lh, nm, f.data);
+      central.push(new Uint8Array([].concat(u32(0x02014b50), u16(20), u16(20), u16(0x0800), u16(0), u16(dt), u16(dd), u32(crc), u32(sz), u32(sz), u16(nm.length), u16(0), u16(0), u16(0), u16(0), u32(0), u32(off))), nm);
+      off += lh.length + nm.length + sz;
+    });
+    var csz = central.reduce(function (a, x) { return a + x.length; }, 0);
+    var end = new Uint8Array([].concat(u32(0x06054b50), u16(0), u16(0), u16(files.length), u16(files.length), u32(csz), u32(off), u16(0)));
+    return new Blob(parts.concat(central, [end]), { type: 'application/zip' });
   }
 
   /* ---------- Salvataggio di un file generato (immagini, backup) ---------- */
@@ -1003,7 +1132,7 @@ window.PCPDemoShow = function (which) {
 
   root.PCPUI = { overlay: overlay, closeOverlay: closeOverlay, rulesOverlay: rulesOverlay, publicUrl: publicUrl, nowRome: nowRome, sponsorOf: sponsorOf, BRAND: BRAND, footer: footer, h: h, add: add, icon: icon, tIcon: tIcon, TOUR: TOUR, when: when, day: day, clock: clock, localKey: localKey, tSlug: tSlug, gSlug: gSlug, href: href, team: team,
     header: header, bottomBar: bottomBar, session: session, matchHref: matchHref, statusPill: statusPill, plannedLine: plannedLine, findMatch: findMatch, shareLink: shareLink, standings: standings, liveCard: liveCard, metaRow: metaRow, headRow: headRow, scoreCard: scoreCard, matchMeta: matchMeta, dateLine: dateLine, versus: versus,
-    collect: collect, sortRecent: sortRecent, recent: recent, rulesBrief: rulesBrief, saveFile: saveFile, QUAL: QUAL };
+    collect: collect, sortRecent: sortRecent, recent: recent, rulesBrief: rulesBrief, zipBlob: zipBlob, mergeBrief: mergeBrief, displayRows: displayRows, saveFile: saveFile, QUAL: QUAL };
 })(window);
 
 </script>
@@ -1019,7 +1148,7 @@ window.PCPDemoShow = function (which) {
   var FORMATS = {
     social: { id: 'social', label: 'Social 4:5', hint: '1080×1350 — Instagram, Facebook, WhatsApp', w: 1080, h: 1350, k: 1 },
     story: { id: 'story', label: 'Verticale 9:16', hint: '1080×1920 — caratteri grandi, stato WhatsApp e storie', w: 1080, h: 1920, k: 1.22, not: 'riepilogo' },
-    riepilogo: { id: 'riepilogo', label: 'Riepilogo 9:16', hint: '1080×1920 — due gironi per immagine', w: 1080, h: 1920, k: 1, only: 'riepilogo' }
+    riepilogo: { id: 'riepilogo', label: 'Riepilogo 9:16', hint: '1080×1920 — due gironi per immagine', w: 1080, h: 1920, k: 1, only: ['riepilogo', 'tournament'] }
   };
   /* Sfondo per categoria: tonalità scure, testo bianco sempre leggibile. */
   var CAT = { GOLD: { bg: '#6a4d00', deep: '#493500' }, SILVER: { bg: '#465361', deep: '#313b46' }, BRONZE: { bg: '#6b3a1c', deep: '#4a2712' }, FEMM: { bg: '#74204a', deep: '#521533' } };
@@ -1085,69 +1214,73 @@ window.PCPDemoShow = function (which) {
   }
 
   var STATE = {
-    QUALIFICATA_MATEMATICA: ['✓ Qualificata (matematica)', 'ok'], QUALIFICATA: ['✓ Qualificata', 'ok'],
+    QUALIFICATA_MATEMATICA: ['✓ Qualificata', 'ok'], QUALIFICATA: ['✓ Qualificata', 'ok'],
     ELIMINATA_MATEMATICA: ['Eliminata', 'out'], ELIMINATA: ['Eliminata', 'out'], RITIRATA: ['Ritirata', 'out'], IN_VERIFICA: ['In verifica', 'warn']
   };
 
   /* ---------- Blocchi: ogni blocco ha un'intestazione e una lista di elementi con altezza nota ---------- */
   function tableBlock(mc, t, g, title, W, k, report) { // mc = contesto usato solo per misurare
-    var off = g.official, pad = 28 * k, numW = 96 * k, posW = off ? 84 * k : 0, cols = off ? ['G', 'Pt', 'DG'] : ['G', 'V', 'P'], tcol = (U.TOUR[t.id] || {}).dark || C.brand;
-    var nameW = W - pad * 2 - posW - numW * 3 - 12 * k;
+    var off = g.official, pad = 28 * k, numW = 76 * k, posW = off ? 64 * k : 0, cols = off ? ['G', 'Pt', 'DG'] : ['G', 'V', 'P'], tcol = (U.TOUR[t.id] || {}).dark || C.brand;
+    var nameW = W - pad * 2 - posW - numW * 3 - 10 * k;
     var items = [];
-    items.push({ h: 46 * k, draw: function (ctx, x, y) {
-      font(ctx, 24 * k, 600); ctx.fillStyle = C.muted; ctx.textAlign = 'left';
-      if (off) ctx.fillText('#', x + pad, y + 32 * k);
-      ctx.fillText('Coppia', x + pad + posW, y + 32 * k);
+    items.push({ h: 42 * k, draw: function (ctx, x, y) {
+      font(ctx, 22 * k, 600); ctx.fillStyle = C.muted; ctx.textAlign = 'left';
+      if (off) ctx.fillText('#', x + pad + 8 * k, y + 29 * k);
+      ctx.fillText('Coppia', x + pad + posW, y + 29 * k);
       ctx.textAlign = 'center';
-      cols.forEach(function (c, i) { ctx.fillText(c, x + W - pad - numW * (2.5 - i), y + 32 * k); });
-      ctx.fillStyle = C.line; ctx.fillRect(x, y + 45 * k, W, 1.5);
+      cols.forEach(function (c, i) { ctx.fillText(c, x + W - pad - numW * (2.5 - i), y + 29 * k); });
+      ctx.fillStyle = C.line; ctx.fillRect(x, y + 41 * k, W, 1.5);
     } });
-    g.rows.forEach(function (r, idx) {
-      var nl = nameLines(mc, r.name, nameW, 36 * k, 24 * k, 700, report);
+    var drows = U.displayRows(g);
+    drows.forEach(function (r, idx) {
       var st = r.qual && STATE[r.qual.state], showSt = st && (r.withdrawn || r.qual.state !== 'IN_VERIFICA' || g.complete) && (g.started || r.withdrawn);
       var tie = off && r.tied && g.complete;
-      var lineH = nl.size * 1.22, hRow = 22 * k + nl.lines.length * lineH + (showSt || tie ? 40 * k : 0) + 18 * k;
+      var label = null, bwid = 0; // nessun badge nel nominativo: solo piccoli indicatori grafici sul riquadro della posizione
+      var zero = !r.played, isQ = !!(r.qual && /^QUALIFICATA/.test(r.qual.state)), isOut = !!(r.qual && /^(ELIMINATA|RITIRATA)/.test(r.qual.state)) && (g.started || r.withdrawn);
+      var nl = nameLines(mc, r.name, nameW - (bwid ? bwid + 12 * k : 0), 36 * k, 24 * k, 700, report);
+      var lineH = nl.size * 1.2, hRow = Math.max(58 * k, 22 * k + nl.lines.length * lineH);
       items.push({ h: hRow, draw: function (ctx, x, y) {
-        var base = y + 22 * k + nl.size * 0.92;
+        var base = y + (hRow - nl.lines.length * lineH) / 2 + nl.size * 0.92;
         ctx.textAlign = 'left'; ctx.fillStyle = r.withdrawn ? C.muted : C.ink;
         if (off) {
-          var zq = t.rules.perGroup, inZone = g.started && zq && r.pos != null && !r.withdrawn && r.pos <= zq, bs = 56 * k, byy = base - 41 * k;
-          ctx.fillStyle = inZone ? tcol : C.soft; rr(ctx, x + pad, byy, bs, bs, 12 * k); ctx.fill();
-          ctx.fillStyle = inZone ? '#ffffff' : (r.withdrawn ? C.muted : C.ink); ctx.textAlign = 'center'; font(ctx, 30 * k, 800);
-          ctx.fillText(r.pos == null ? '–' : r.pos + (r.tied ? '=' : ''), x + pad + bs / 2, byy + 39 * k);
-          ctx.textAlign = 'left'; ctx.fillStyle = r.withdrawn ? C.muted : C.ink;
+          var zq = t.rules.perGroup, inZone = g.started && zq && !zero && r.pos != null && !r.withdrawn && r.pos <= zq, bs = 42 * k, byy = base - 31 * k;
+          if (isQ) { ctx.fillStyle = '#17693f'; rr(ctx, x + pad, byy, bs, bs, 10 * k); ctx.fill(); }
+          else if (inZone && !isOut) { ctx.fillStyle = '#ffffff'; rr(ctx, x + pad, byy, bs, bs, 10 * k); ctx.fill(); ctx.strokeStyle = '#17693f'; ctx.lineWidth = 3 * k; rr(ctx, x + pad + 1.5 * k, byy + 1.5 * k, bs - 3 * k, bs - 3 * k, 9 * k); ctx.stroke(); }
+          else if (!zero) { ctx.fillStyle = C.soft; rr(ctx, x + pad, byy, bs, bs, 10 * k); ctx.fill(); }
+          ctx.fillStyle = isQ ? '#ffffff' : inZone && !isOut ? '#17693f' : (r.withdrawn || isOut || zero ? C.muted : C.ink); ctx.textAlign = 'center'; font(ctx, 26 * k, 800);
+          ctx.fillText(r.pos == null || zero ? '–' : r.pos + (r.tied ? '=' : ''), x + pad + bs / 2, byy + 30 * k);
+          ctx.textAlign = 'left'; ctx.fillStyle = r.withdrawn || isOut ? C.muted : C.ink;
         }
-        font(ctx, nl.size, 700);
+        font(ctx, nl.size, zero ? 600 : 700);
         nl.lines.forEach(function (l, i) { ctx.fillText(l, x + pad + posW, base + i * lineH); });
-        if (showSt || tie) {
-          var label = tie ? 'Parità da risolvere' : st[0], kind = tie ? 'warn' : st[1];
-          font(ctx, 23 * k, 600);
-          var bw = ctx.measureText(label).width + 26 * k, by = base + (nl.lines.length - 1) * lineH + 14 * k;
-          ctx.fillStyle = C[kind + 'bg']; rr(ctx, x + pad + posW, by, bw, 34 * k, 17 * k); ctx.fill();
-          ctx.fillStyle = C[kind]; ctx.fillText(label, x + pad + posW + 13 * k, by + 25 * k);
+        if (label) {
+          var kind = tie ? 'warn' : st[1];
+          font(ctx, 21 * k, 600);
+          var bx2 = x + W - pad - numW * 3 - 8 * k - bwid, by = y + (hRow - 32 * k) / 2;
+          ctx.fillStyle = C[kind + 'bg']; rr(ctx, bx2, by, bwid, 32 * k, 16 * k); ctx.fill();
+          ctx.fillStyle = C[kind]; ctx.textAlign = 'left'; ctx.fillText(label, bx2 + 11 * k, by + 23 * k);
         }
         ctx.textAlign = 'center'; ctx.fillStyle = r.withdrawn ? C.muted : C.ink;
         var vals = off ? [r.played, r.pts + (r.ptsPending ? '*' : ''), (r.dg > 0 ? '+' : '') + r.dg] : [r.played, r.won, r.lost];
         vals.forEach(function (v, i) {
           var cx = x + W - pad - numW * (2.5 - i), isPt = off && i === 1;
-          if (isPt) { ctx.fillStyle = r.withdrawn ? '#7d8b99' : C.night; rr(ctx, cx - 40 * k, base - 41 * k, 80 * k, 56 * k, 12 * k); ctx.fill(); ctx.fillStyle = '#ffffff'; }
+          if (isPt) { ctx.fillStyle = r.withdrawn ? '#7d8b99' : C.night; rr(ctx, cx - 32 * k, base - 31 * k, 64 * k, 42 * k, 10 * k); ctx.fill(); ctx.fillStyle = '#ffffff'; }
           else ctx.fillStyle = C.muted;
-          font(ctx, (isPt ? 34 : 30) * k, isPt ? 800 : 500); ctx.fillText(String(v), cx, base - (isPt ? 1 * k : 0));
+          font(ctx, (isPt ? 30 : 28) * k, isPt ? 800 : 500); ctx.fillText(String(v), cx, base - (isPt ? 1 * k : 0));
         });
-        if (idx < g.rows.length - 1) { ctx.fillStyle = C.line; ctx.fillRect(x + pad, y + hRow - 1, W - pad * 2, 1.5); }
+        if (idx < drows.length - 1) { ctx.fillStyle = C.line; ctx.fillRect(x + pad, y + hRow - 1, W - pad * 2, 1.5); }
       } });
     });
-    var legend = off
-      ? 'G giocate · Pt punti · DG differenza game.' + (t.rules.perGroup ? ' Si qualificano le prime ' + t.rules.perGroup + (t.rules.bestNext ? ' e le ' + t.rules.bestNext + ' migliori ' + (t.rules.perGroup + 1) + 'e' : '') + '.' : '') +
-        (g.rows.some(function (r) { return r.ptsPending; }) ? ' * punti in sospeso: regola da confermare.' : '') + (g.rows.some(function (r) { return r.tied; }) ? ' = pari merito.' : '')
-      : 'Classifica ufficiale non disponibile: regolamento da confermare. G giocate · V vinte · P perse, nell\'ordine comunicato.';
-    font(mc, 23 * k, 400);
-    var ll = wrap(mc, legend, W - pad * 2);
-    items.push({ h: 20 * k + ll.length * 31 * k + 12 * k, draw: function (ctx, x, y) {
-      ctx.fillStyle = C.line; ctx.fillRect(x, y, W, 1.5);
-      font(ctx, 23 * k, 400); ctx.fillStyle = C.muted; ctx.textAlign = 'left';
-      ll.forEach(function (l, i) { ctx.fillText(l, x + pad, y + 20 * k + 24 * k + i * 31 * k); });
-    } });
+    // nessuna nota tecnica sotto la tabella; resta solo l'avviso essenziale (classifica non ufficiale / punti in sospeso)
+    var legend = !off ? 'Classifica ufficiale non disponibile: regolamento da confermare.' : g.rows.some(function (r) { return r.ptsPending; }) ? '* punti in sospeso: regola da confermare.' : '';
+    if (legend) {
+      font(mc, 23 * k, 400);
+      var ll = wrap(mc, legend, W - pad * 2);
+      items.push({ h: 14 * k + ll.length * 30 * k + 10 * k, draw: function (ctx, x, y) {
+        font(ctx, 23 * k, 400); ctx.fillStyle = C.muted; ctx.textAlign = 'left';
+        ll.forEach(function (l, i) { ctx.fillText(l, x + pad, y + 14 * k + 22 * k + i * 30 * k); });
+      } });
+    }
     return { title: title, right: g.played + ' di ' + g.total + ' giocati', items: items, accent: C.brand, keepTogether: true };
   }
 
@@ -1289,8 +1422,8 @@ window.PCPDemoShow = function (which) {
     var tx = M, lh = 100;
     if (o.logo) { var lw = lh * o.logo.naturalWidth / o.logo.naturalHeight, pw = lw + 30, ph = lh + 24; ctx.fillStyle = '#ffffff'; rr(ctx, M, 24, pw, ph, 22); ctx.fill(); ctx.drawImage(o.logo, M + 15, 36, lw, lh); tx = M + pw + 28; }
     ctx.textAlign = 'left'; var ev = nameLines(ctx, 'Elba Winter Championship', W - M - tx - 20, 48, 30, 800, report); ctx.fillStyle = C.sun; font(ctx, ev.size, 800); ctx.fillText(ev.lines[0], tx, 76);
-    var title = t.name + ' · ' + g.label, tl = nameLines(ctx, title, W - M - tx - 20 - (o.env !== 'PROD' ? 260 : 0), 36, 24, 700, report); font(ctx, tl.size, 700); ctx.fillStyle = '#ffffff'; ctx.fillText(tl.lines[0], tx, 126);
-    if (o.env !== 'PROD') { font(ctx, 20, 800); var tw = ctx.measureText('TEST · dati di prova').width + 26; ctx.fillStyle = C.sun; rr(ctx, W - M - tw, 96, tw, 36, 18); ctx.fill(); ctx.fillStyle = C.night; ctx.fillText('TEST · dati di prova', W - M - tw + 13, 121); }
+    var title = t.name + ' · ' + g.label, tl = nameLines(ctx, title, W - M - tx - 20 - (o.demo ? (o.demoPrivate ? 520 : 260) : 0), 36, 24, 700, report); font(ctx, tl.size, 700); ctx.fillStyle = '#ffffff'; ctx.fillText(tl.lines[0], tx, 126);
+    if (o.demo) { var TL = o.demoPrivate ? 'TEST — NON UFFICIALE · DATI FITTIZI' : 'TEST — DATI FITTIZI'; font(ctx, 20, 800); var tw = ctx.measureText(TL).width + 26; ctx.fillStyle = C.sun; rr(ctx, W - M - tw, 96, tw, 36, 18); ctx.fill(); ctx.fillStyle = C.night; ctx.fillText(TL, W - M - tw + 13, 121); }
     [[C.terra, 0, 0.58], [C.sun, 0.58, 0.76], [C.skyl, 0.76, 0.88], [C.sky, 0.88, 1]].forEach(function (st) { ctx.fillStyle = st[0]; ctx.fillRect(W * st[1], headH - 8, W * (st[2] - st[1]) + 1, 8); });
     // dettaglio diagonale tra apertura e risultato
     var gy = apY + apH + 11; band(M + 8, gy, 230, 9, 18, C.terra); band(M + 256, gy, 90, 9, 18, C.sun); band(M + 364, gy, 42, 9, 18, C.sky);
@@ -1323,6 +1456,7 @@ window.PCPDemoShow = function (which) {
     var fy = H - footH / 2 + 8; ctx.fillStyle = '#ffffff'; ctx.textAlign = 'left'; font(ctx, 27, 700); ctx.fillText(U.BRAND.club, M, fy);
     ctx.textAlign = 'right'; font(ctx, 25, 600); if (U.BRAND.handle) ctx.fillText('Instagram ' + U.BRAND.handle, W - M, fy);
     report.pages = 1; report.aperture = { x: apX, y: apY, w: apW, h: apH, kx: 0, ky: 0 };
+    report.sponsorRect = spImgs.length ? { x: M, y: spY, w: cw, h: spH } : null; report.hasSponsor = spImgs.length;
     if (o.photo) { // quanto si sposta la posizione (0–1) per ogni pixel di trascinamento sull'immagine finale
       var v2 = o.photoView || {}, sc2 = Math.max(apW / o.photo.naturalWidth, apH / o.photo.naturalHeight) * Math.max(1, v2.zoom || 1), fx = o.photo.naturalWidth - apW / sc2, fy2 = o.photo.naturalHeight - apH / sc2;
       report.aperture.kx = fx > 0.5 ? 1 / (fx * sc2) : 0; report.aperture.ky = fy2 > 0.5 ? 1 / (fy2 * sc2) : 0;
@@ -1361,11 +1495,23 @@ window.PCPDemoShow = function (which) {
       title = t.name + ' · Fase finale';
       blocks = playoffBlocks(scratch, t, cw, k, report);
     }
-    var headH = 250, footH = 84, titleH = 80 * k, gapB = 26, top0 = headH + 30, hasSp = !!(o.sponsorImgs && o.sponsorImgs.length), spBandH = hasSp ? (H >= 1800 ? 168 : 140) : 0, maxY = H - footH - (hasSp ? spBandH + 44 : o.env !== 'PROD' ? 72 : 24);
+    var headH = 250, footH = 84, titleH = 80 * k, gapB = 26, top0 = headH + 30, hasSp = !!(o.sponsorImgs && o.sponsorImgs.length), spBandH = hasSp ? (H >= 1800 ? 168 : 140) : 0, maxY = H - footH - (hasSp ? spBandH + 44 : o.demo ? 72 : 24);
     var pal = (o.catColor !== false && t && CAT[t.id]) || { bg: C.bg, deep: C.deep };
+    // gironi: distribuzione adattiva (fino a tre per immagine, ripartiti in modo uniforme: 4 → 2+2, 5 → 3+2, 6 → 3+3); se un gruppo non entra in altezza si usano più immagini
+    if ((o.scope === 'tournament' || o.scope === 'riepilogo-t') && blocks.length > 1) {
+      var hts = blocks.map(function (b) { return titleH + b.items.reduce(function (a, it) { return a + it.h; }, 0); }), avail = maxY - top0, n = blocks.length;
+      for (var P = Math.ceil(n / 3); P <= n; P++) {
+        var base = Math.floor(n / P), extra = n % P, sizes = [], ok = true, at = 0;
+        for (var pi = 0; pi < P; pi++) sizes.push(base + (pi < extra ? 1 : 0));
+        sizes.forEach(function (sz) { var tot = 0; for (var q = 0; q < sz; q++) tot += hts[at + q] + (q ? gapB : 0); if (tot > avail) ok = false; at += sz; });
+        if (ok || P === n) { at = 0; sizes.forEach(function (sz, pi2) { blocks[at].breakBefore = pi2 > 0; at += sz; }); break; }
+      }
+      report.groupsPerPage = blocks.map(function (b) { return b.breakBefore; });
+    }
     var pages = [[]], y = top0;
     blocks.forEach(function (b) {
       var i = 0, part = 0;
+      if (b.breakBefore && pages[pages.length - 1].length) { pages.push([]); y = top0; }
       var total = titleH + b.items.reduce(function (a, it) { return a + it.h; }, 0);
       if (b.keepTogether && total <= maxY - top0 && y + total > maxY && pages[pages.length - 1].length) { pages.push([]); y = top0; }
       while (i < b.items.length) {
@@ -1399,10 +1545,10 @@ window.PCPDemoShow = function (which) {
       font(ctx, tl.size, 800); ctx.fillStyle = '#ffffff';
       tl.lines.slice(0, 2).forEach(function (l, i) { ctx.fillText(l, tx, (tl.lines.length > 1 ? 138 : 158) + i * tl.size * 1.08); });
       if (o.kicker) { ctx.fillStyle = '#b8cee2'; font(ctx, 26, 500); ctx.fillText(o.kicker, tx, tl.lines.length > 1 ? 138 + tl.size * 1.08 + 38 : 200); }
-      if (o.env !== 'PROD') {
-        font(ctx, 22, 800); var tw = ctx.measureText('TEST · dati di prova').width + 30;
+      if (o.demo) {
+        var TL2 = o.demoPrivate ? 'TEST — NON UFFICIALE · DATI FITTIZI' : 'TEST — DATI FITTIZI'; font(ctx, 22, 800); var tw = ctx.measureText(TL2).width + 30;
         ctx.fillStyle = C.sun; rr(ctx, W - M - tw, H - footH - 58, tw, 40, 20); ctx.fill();
-        ctx.fillStyle = C.night; ctx.textAlign = 'left'; ctx.fillText('TEST · dati di prova', W - M - tw + 15, H - footH - 30);
+        ctx.fillStyle = C.night; ctx.textAlign = 'left'; ctx.fillText(TL2, W - M - tw + 15, H - footH - 30);
       }
       [[C.terra, 0, 0.58], [C.sun, 0.58, 0.76], [C.skyl, 0.76, 0.88], [C.sky, 0.88, 1]].forEach(function (st) { ctx.fillStyle = st[0]; ctx.fillRect(W * st[1], headH - 8, W * (st[2] - st[1]) + 1, 8); });
       // blocchi
@@ -1537,7 +1683,7 @@ window.PCPDemoShow = function (which) {
   }
   function renderChrome() {
     var r = route(), t = S.snap && r.t ? findT(r.t) : null, g = t && r.g ? findG(t, r.g) : null;
-    U.header(hdr, { title: 'Elba Winter Championship', sub: 'Risultati e classifiche', test: S.snap && S.snap.meta.env !== 'PROD', home: { href: U.href() },
+    U.header(hdr, { title: 'Elba Winter Championship', sub: 'Risultati e classifiche', test: S.snap && S.snap.meta.env !== 'PROD', home: { href: U.href() }, sponsor: S.snap ? U.sponsorOf(S.snap) : null,
       refresh: { onclick: function () { load(false); }, busy: S.busy, alert: S.stale,
         label: S.busy ? '…' : S.stale ? 'Non in linea' : S.fetchedAt ? U.clock(S.fetchedAt) : '',
         full: S.fetchedAt ? 'Ultimo aggiornamento: ' + U.when(S.fetchedAt) : '' } });
@@ -1562,21 +1708,26 @@ window.PCPDemoShow = function (which) {
       return h('li', null, h('a', { class: 'chip ic', href: U.href(t.id), 'aria-current': cur === t.id ? 'page' : null }, U.tIcon(t.id, 20), h('span', null, t.name)));
     })));
   }
-  function groupChips(t, cur) {
+  function shareBtn(href) { return href ? h('a', { class: 'topshare', href: href, 'aria-label': 'Condividi come immagine', title: 'Condividi' }, U.icon('share', 20), h('span', { class: 'tsl' }, 'Condividi')) : null; }
+  function groupChips(t, cur, share) {
     var items = t.groups.map(function (g) {
       return h('li', null, h('a', { class: 'chip', href: U.href(t.id, U.gSlug(g.id)), 'aria-current': cur === g.id ? 'page' : null }, g.label));
     });
     items.push(h('li', null, h('a', { class: 'chip', href: U.href(t.id, 'playoff'), 'aria-current': cur === 'playoff' ? 'page' : null }, 'Fase finale')));
-    return h('nav', { 'aria-label': 'Gironi di ' + t.name }, h('ul', { class: 'chips' }, items));
+    return h('div', { class: 'shrow' }, h('nav', { 'aria-label': 'Gironi di ' + t.name }, h('ul', { class: 'chips' }, items)), shareBtn(share));
   }
   function unofficialNote() {
     return h('div', { class: 'note warn' }, h('strong', null, 'Classifica ufficiale non disponibile'), 'Regolamento da confermare: qui sotto solo partite giocate, vinte e perse, nell\'ordine comunicato.');
   }
   function standingsCard(t, g, link, noLegend) {
     var zone = { q: g.official ? t.rules.perGroup : null, extra: t.rules.bestNext > 0 };
+    var hasQ = g.official && g.rows.some(function (r) { return r.qual && (r.qual.state === 'QUALIFICATA' || r.qual.state === 'QUALIFICATA_MATEMATICA'); });
+    var hasProv = g.official && g.started && zone.q && g.rows.some(function (r) { return r.played > 0 && r.pos != null && !r.withdrawn && r.pos <= zone.q && !(r.qual && /^(QUALIFICATA|ELIMINATA|RITIRATA)/.test(r.qual.state)); });
+    var hasOut = g.official && g.started && g.rows.some(function (r) { return r.qual && /^(ELIMINATA|RITIRATA)/.test(r.qual.state); });
     var legend = g.official
-      ? [g.started && zone.q ? [h('span', { class: 'key' }), 'prime ' + zone.q + ': zona qualificazione. ', zone.extra ? [h('span', { class: 'key k2' }), (zone.q + 1) + 'ª: può passare tra le migliori. '] : null] : null,
-          'G giocate, Pt punti, DG differenza game. Tocca una coppia per i dettagli.']
+      ? [hasQ ? [h('span', { class: 'key' }), 'Qualificate. '] : null, hasProv ? [h('span', { class: 'key k3' }), 'Al momento qualificate. '] : null, hasOut ? [h('span', { class: 'key k4' }), 'Eliminate. '] : null,
+          g.started && zone.extra && zone.q ? [h('span', { class: 'key k2' }), (zone.q + 1) + 'ª: può passare tra le migliori. '] : null,
+          'G giocate, Pt punti, DG differenza game. Tocca la coppia per dettagli.']
       : 'G giocate · V vinte · P perse. Non è una graduatoria.';
     return h('section', { class: 'card flush accent t-' + t.id },
       h('div', { class: 'cardhead' }, h('h2', null, link ? h('a', { class: 'cardlink', href: U.href(t.id, U.gSlug(g.id)) }, g.label + ' ›') : (g.official ? 'Classifica' : 'Riepilogo partite')),
@@ -1597,6 +1748,7 @@ window.PCPDemoShow = function (which) {
       h('button', { class: 'rulebtn', type: 'button', 'aria-label': 'Regolamento ' + t.name, title: 'Regolamento', onclick: function () { U.rulesOverlay(t); } }, h('span', { 'aria-hidden': 'true' }, '📋'))),
       share ? h('a', { class: 'topshare', href: share }, U.icon('share', 18), h('span', null, 'Condividi')) : null];
   }
+  function po0(t) { return !!(t.playoff && t.playoff.qualifiers && t.playoff.qualifiers.length); }
   function backLink(href, label) { return h('a', { class: 'back', href: href }, '‹ ' + label); }
   function sponsorStrip(sp, label) { return sp ? h('div', { class: 'sponsor' }, h('span', null, label), h('img', { src: sp.image, alt: sp.name })) : null; }
 
@@ -1679,12 +1831,12 @@ window.PCPDemoShow = function (which) {
   function viewTournament(t) {
     var rec = U.collect([t], t.id);
     return [
-      backLink('#', 'Home'), tournamentChips(t.id), pageTitle(t, 'Torneo ' + t.name, U.href(t.id, 'esporta')), groupChips(t, null),
+      backLink('#', 'Home'), tournamentChips(t.id), pageTitle(t, 'Torneo ' + t.name), groupChips(t, null, U.href(t.id, 'esporta')),
       t.official ? null : unofficialNote(),
       h('div', { class: 'cols' }, t.groups.map(function (g) { return h('div', null, standingsCard(t, g, true), groupNotes(g)); })),
       h('h2', { class: 'sec' }, 'Ultimi 5 risultati · ' + t.name), U.recent(rec, 5, 'g', 'Nessun risultato registrato in questo torneo.'),
       U.rulesBrief(t),
-      h('div', { class: 'btnrow' }, exportBtn(U.href(t.id, 'esporta'), 'Condividi le classifiche del torneo'), rec.length ? exportBtn(U.href(t.id, 'ultimi-esporta'), 'Condividi gli ultimi risultati') : null)
+      rec.length ? h('div', { class: 'btnrow' }, exportBtn(U.href(t.id, 'ultimi-esporta'), 'Condividi gli ultimi risultati')) : null
     ];
   }
 
@@ -1703,7 +1855,7 @@ window.PCPDemoShow = function (which) {
     var panel;
     if (tab === 'cl') panel = [t.official ? null : unofficialNote(), standingsCard(t, g, false), groupNotes(g),
       h('h2', { class: 'sec' }, 'Ultimi 5 risultati · ' + g.label), U.recent(played, 5, null, 'Nessun risultato registrato in questo girone.'),
-      U.rulesBrief(t), exportBtn(U.href(t.id, U.gSlug(g.id) + '-esporta'), 'Condividi classifica e risultati')];
+      U.rulesBrief(t)];
     else if (tab === 'ri') panel = played.length
       ? h('section', { class: 'card flush' }, played.map(function (x) { return h('div', { class: 'match' }, U.headRow(x.m), U.scoreCard(x.m)); }))
       : h('div', { class: 'card empty' }, 'Nessun risultato registrato in questo girone.');
@@ -1714,7 +1866,7 @@ window.PCPDemoShow = function (which) {
         return h('div', { class: 'match' }, U.versus(m), g.official ? h('span', { class: 'pill' }, m.forfeit ? '6-0 6-0 a tavolino per la coppia non ritirata' : '1 punto amministrativo alla coppia non ritirata') : null); }))] : null
     ];
     return [
-      backLink(U.href(t.id), 'Torneo ' + t.name), tournamentChips(t.id), pageTitle(t, t.name + ' · ' + g.label, U.href(t.id, U.gSlug(g.id) + '-esporta')), groupChips(t, g.id),
+      backLink(U.href(t.id), 'Torneo ' + t.name), tournamentChips(t.id), pageTitle(t, t.name + ' · ' + g.label), groupChips(t, g.id, U.href(t.id, U.gSlug(g.id) + '-esporta')),
       h('div', { class: 'chips tabs', role: 'tablist', 'aria-label': 'Sezioni del girone' }, tabBtn('cl', t.official ? 'Classifica' : 'Riepilogo'), tabBtn('ri', 'Risultati (' + played.length + ')'), tabBtn('dg', 'Da giocare (' + todo.length + ')')),
       h('div', { id: 'panel', role: 'tabpanel', 'aria-labelledby': 'tab-' + tab }, panel)
     ];
@@ -1732,7 +1884,7 @@ window.PCPDemoShow = function (which) {
   function viewPlayoff(t) {
     var po = t.playoff;
     return [
-      backLink(U.href(t.id), 'Torneo ' + t.name), tournamentChips(t.id), pageTitle(t, t.name + ' · Fase finale'), groupChips(t, 'playoff'),
+      backLink(U.href(t.id), 'Torneo ' + t.name), tournamentChips(t.id), pageTitle(t, t.name + ' · Fase finale'), groupChips(t, 'playoff', po0(t) ? U.href(t.id, 'playoff-esporta') : null),
       po.champion ? h('section', { class: 'card champ' }, h('div', { class: 'lab' }, 'Vincitrice del torneo'), U.team(po.champion.name)) : null,
       (po.notes || []).map(function (n) { return h('div', { class: 'note ' + (/provvisor/i.test(n) ? 'info' : 'warn') }, n); }),
       po.configured ? (function () {
@@ -1746,122 +1898,155 @@ window.PCPDemoShow = function (which) {
         })) : null, br];
       })() : null,
       po.qualifiers.length ? [
-        h('h2', { class: 'sec' }, 'Qualificate'),
+        h('h2', { class: 'sec' }, 'Qualificate (definitive)'),
         h('section', { class: 'card flush accent t-' + t.id }, po.qualifiers.map(function (q) {
           return h('div', { class: 'slot' }, h('span', { class: 'lab' }, q.best ? q.label + (q.groupLabel ? ' — ' + q.groupLabel : '') : q.pos + 'ª classificata ' + q.groupLabel),
             q.team ? h('span', { class: 'who' }, U.team(q.team.name)) : h('span', { class: 'who tbd' }, q.state === 'IN_VERIFICA' ? 'In verifica' : 'Da determinare'));
         })),
-        h('p', { class: 'sub' }, 'Una posizione compare qui solo a girone concluso e senza parità aperte.')] : null,
+        h('p', { class: 'sub' }, 'Qui compaiono le qualificate definitive: girone concluso e senza parità aperte. Una qualificazione matematica anticipata si vede nella classifica del girone; una posizione solo provvisoria non entra nel tabellone. Gli abbinamenti restano da confermare finché non sono indicati come ufficiali.')] : null,
       U.rulesBrief(t),
-      po.qualifiers.length ? exportBtn(U.href(t.id, 'playoff-esporta'), 'Condividi il tabellone') : null
+      null
     ];
   }
 
   /** Pagina di un singolo incontro: collegamento diretto, condivisibile. */
+  /* Condivisione diretta del risultato: l'immagine (formato verticale 9:16, sponsor dell'incontro) è preparata in anticipo, così il tocco apre subito il menu nativo. */
+  var MC = { key: null, p: null };
+  function prepMatchImage(x) {
+    var key = x.m.id + '|' + (S.snap && S.snap.meta.dataVersion);
+    if (MC.key === key && MC.p) return MC.p;
+    var sp = U.sponsorOf(S.snap, x.m.id);
+    MC.key = key; MC.p = root.PCPExport.render({ demo: !!(root.PCP_CONFIG && root.PCP_CONFIG.demo), demoPrivate: !!(root.PCP_CONFIG && root.PCP_CONFIG.demoPrivate), env: S.snap.meta.env, stamp: S.fetchedAt || new Date().toISOString(), format: 'story', sponsors: sp ? [sp] : [], sponsorOpt: { pos: 'bottom', big: false, ring: false }, photoUrl: null, photoView: { zoom: 1, x: 0.5, y: 0.5 }, scope: 'match', t: x.t, g: x.g, x: x })
+      .then(function (res) { var im = res.images[0]; return new File([im.blob], im.name, { type: 'image/png' }); });
+    MC.p.catch(function () { MC.key = null; });
+    return MC.p;
+  }
+  function shareMatchNow(x, btn, status) {
+    var fallback = function (msg) { S.flash = msg; location.hash = U.matchHref(x.m.id) + '-esporta'; };
+    if (!navigator.share || !navigator.canShare) return fallback('Su questo dispositivo la condivisione diretta non è disponibile: scarica l\'immagine qui sotto e condividila dalla galleria.');
+    btn.disabled = true; status.textContent = 'Preparo l\'immagine…';
+    prepMatchImage(x).then(function (file) {
+      var ok = false; try { ok = navigator.canShare({ files: [file] }); } catch (e) { ok = false; }
+      if (!ok) { btn.disabled = false; return fallback('Questo dispositivo non può condividere l\'immagine direttamente: scaricala qui sotto.'); }
+      return navigator.share({ files: [file], title: 'Elba Winter Championship' }).then(function () { btn.disabled = false; status.textContent = ''; }, function (e) {
+        btn.disabled = false; status.textContent = '';
+        if (e && e.name === 'AbortError') return;
+        fallback('La condivisione diretta non è riuscita: scarica l\'immagine qui sotto e condividila dalla galleria.');
+      });
+    }).catch(function () { btn.disabled = false; fallback('Non è stato possibile creare l\'immagine: riprova dalla pagina di esportazione.'); });
+  }
   function viewMatch(x) {
+    if (x.m.state === 'GIOCATO' && root.PCPExport) setTimeout(function () { prepMatchImage(x).catch(function () {}); }, 400);
+    var st = h('span', { class: 'sub', role: 'status' }, ''), sb = h('button', { class: 'btn', type: 'button', onclick: function () { shareMatchNow(x, sb, st); } }, U.icon('share', 22), h('span', null, 'Condividi il risultato'));
     var m = x.m, back = x.g.playoff ? U.href(x.t.id, 'playoff') : U.href(x.t.id, U.gSlug(x.g.id));
     return [
-      h('a', { class: 'back', href: back }, '‹ ' + x.t.name + ' · ' + x.g.label), pageTitle(x.t, x.t.name + ' · ' + x.g.label, m.state === 'GIOCATO' ? U.matchHref(m.id) + '-esporta' : null),
+      h('a', { class: 'back', href: back }, '‹ ' + x.t.name + ' · ' + x.g.label), pageTitle(x.t, x.t.name + ' · ' + x.g.label),
       m.state === 'GIOCATO' ? h('section', { class: 'card' }, U.scoreCard(m), U.matchMeta(m, x.g.official), sponsorStrip(S.snap.sponsors && S.snap.sponsors.byMatch && S.snap.sponsors.byMatch[m.id] ? U.sponsorOf(S.snap, m.id) : null, 'Partner dell\'incontro'))
         : h('section', { class: 'card' }, m.a.name && m.b.name ? U.versus(m) : h('p', { class: 'sub' }, 'Partecipanti da determinare.'), U.plannedLine(m),
           h('p', { class: 'sub' }, m.status === 'PROPOSTO' ? 'Risultato proposto: in attesa di approvazione del Club.' : m.status === 'SOSPESO' ? 'Risultato sospeso: in verifica.' : 'Incontro ancora da giocare.')),
-      m.state === 'GIOCATO' ? exportBtn(U.matchHref(m.id) + '-esporta', 'Condividi questo risultato') : null
+      m.state === 'GIOCATO' ? [h('div', { class: 'btnrow two' }, sb, h('a', { class: 'btn sec2', href: U.matchHref(m.id) + '-esporta' }, U.icon('camera', 22), h('span', null, 'Foto e sponsor'))), st] : null
     ];
   }
 
   /* Anteprima della card dell'incontro: un tocco sull'apertura (area bianca) sceglie la foto dalla galleria; trascinando si sposta l'inquadratura.
    * Tutto resta sul dispositivo; il PNG finale viene ricreato a piena risoluzione. */
-  function photoPicker(im, E, again, RS) {
-    /* Editor della foto, solo sullo schermo (mai nel PNG): l'apertura trasparente diventa un pulsante «Tocca per aggiungere una foto».
-     * Con la foto: «Cambia foto» e «Sposta foto». Su telefono il trascinamento è attivo solo in modalità «Sposta», così la pagina scorre normalmente;
-     * con il mouse si trascina sempre. In alternativa (anche da tastiera) restano i cursori Zoom / Orizzontale / Verticale. */
-    var ap = RS.report.aperture, st = null, moving = !!E.moving;
+  function photoPicker(im, E, again, RS, ctl) {
+    /* Editor sulla sola anteprima (mai nel PNG). Apertura: «Tocca per aggiungere una foto»; con la foto si trascina direttamente (mouse e dito), +/− ingrandiscono,
+     * «Reimposta» riporta l'inquadratura iniziale. L'area Sponsor è selezionabile nell'anteprima e apre un pannello contestuale. */
+    var ap = RS.report.aperture, st = null, sr = RS.report.sponsorRect;
     var pct = function (v, tot) { return (v / tot * 100).toFixed(3) + '%'; };
     var box = { left: pct(ap.x, im.width), top: pct(ap.y, im.height), width: pct(ap.w, im.width), height: pct(ap.h, im.height) };
     var pick = function () { var f = document.getElementById('exp-ph'); if (f) f.click(); };
     var place = function (el, st2) { Object.keys(st2).forEach(function (k2) { el.style[k2] = st2[k2]; }); return el; }; // posizione via CSSOM (compatibile con la CSP)
-    var img = h('img', { class: 'pick' + (E.photo && moving ? ' drag' : ''), src: im.url, width: im.width, height: im.height, draggable: 'false', alt: 'Anteprima della card dell\'incontro',
-      ondragstart: function (ev) { ev.preventDefault(); }, onpointercancel: function () { st = null; },
-      onpointerdown: function (ev) {
-        if (!E.photo || (ev.pointerType !== 'mouse' && !moving)) { st = null; return; }
-        var r = ev.currentTarget.getBoundingClientRect(), k = im.width / r.width, x = (ev.clientX - r.left) * k, y = (ev.clientY - r.top) * k;
-        st = x >= ap.x && x <= ap.x + ap.w && y >= ap.y && y <= ap.y + ap.h ? { x: ev.clientX, y: ev.clientY, k: k } : null;
-        if (st) { ev.preventDefault(); try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (e) { /* facoltativo */ } }
-      },
+    var cl = function (v) { return Math.round(Math.min(1, Math.max(0, v)) * 1000) / 1000; };
+    var zoomTo = function (z) { z = Math.round(Math.min(3, Math.max(1, z)) * 100) / 100; if (z !== E.zoom) again({ zoom: z }); };
+    var img = h('img', { class: 'pick', src: im.url, width: im.width, height: im.height, draggable: 'false', alt: 'Anteprima della card dell\'incontro', ondragstart: function (ev) { ev.preventDefault(); } });
+    var drag = E.photo ? place(h('div', { class: 'phdrag', role: 'img', 'aria-label': 'Trascina per spostare la foto', title: 'Trascina per spostare la foto',
+      onpointercancel: function () { st = null; },
+      onpointerdown: function (ev) { st = { x: ev.clientX, y: ev.clientY, k: im.width / ev.currentTarget.parentNode.getBoundingClientRect().width }; ev.preventDefault(); try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (e) { /* facoltativo */ } },
+      onpointermove: function (ev) { if (!st) return; ev.currentTarget.style.transform = 'translate(' + (ev.clientX - st.x) + 'px,' + (ev.clientY - st.y) + 'px)'; ev.currentTarget.classList.add('dragging'); },
       onpointerup: function (ev) {
-        if (!st) return; var s0 = st; st = null;
-        var dx = (ev.clientX - s0.x) * s0.k, dy = (ev.clientY - s0.y) * s0.k; if (Math.abs(dx) + Math.abs(dy) < 6 || (!ap.kx && !ap.ky)) return;
-        var cl = function (v) { return Math.round(Math.min(1, Math.max(0, v)) * 1000) / 1000; };
+        if (!st) return; var s0 = st; st = null; ev.currentTarget.style.transform = ''; ev.currentTarget.classList.remove('dragging');
+        var dx = (ev.clientX - s0.x) * s0.k, dy = (ev.clientY - s0.y) * s0.k; if (Math.abs(dx) + Math.abs(dy) < 4 || (!ap.kx && !ap.ky)) return;
         again({ px: cl(E.px - dx * ap.kx), py: cl(E.py - dy * ap.ky) });
-      } });
-    var tools = E.photo ? place(h('div', { class: 'phtools' }, 
-        h('button', { class: 'phbtn', type: 'button', onclick: pick }, U.icon('camera', 18), h('span', null, 'Cambia foto')),
-        h('button', { class: 'phbtn' + (moving ? ' on' : ''), type: 'button', 'aria-pressed': moving ? 'true' : 'false', onclick: function () { E.moving = !moving; render(); } }, U.icon('move', 18), h('span', null, moving ? 'Fine' : 'Sposta foto'))), { left: box.left, top: box.top, width: box.width })
+      } }), box) : null;
+    var tools = E.photo ? place(h('div', { class: 'phtools' },
+        h('button', { class: 'phbtn', type: 'button', onclick: pick }, U.icon('camera', 18), h('span', null, 'Cambia')),
+        h('button', { class: 'phbtn sq', type: 'button', 'aria-label': 'Riduci', disabled: E.zoom <= 1, onclick: function () { zoomTo(E.zoom - 0.25); } }, '−'),
+        h('button', { class: 'phbtn sq', type: 'button', 'aria-label': 'Ingrandisci', disabled: E.zoom >= 3, onclick: function () { zoomTo(E.zoom + 0.25); } }, '+'),
+        h('button', { class: 'phbtn', type: 'button', onclick: function () { again({ zoom: 1, px: 0.5, py: 0.5 }); } }, h('span', null, 'Reimposta'))), { left: box.left, top: box.top, width: box.width, height: box.height })
       : place(h('button', { class: 'phadd', type: 'button', onclick: pick },
         h('span', { class: 'phic', 'aria-hidden': 'true' }, U.icon('camera', 34), h('b', null, '+')), h('strong', null, 'Tocca per aggiungere una foto'), h('span', { class: 'phsub' }, 'Scegli dalla galleria')), box);
+    var spBtn = sr ? place(h('button', { class: 'spzone' + (E.spPanel ? ' on' : ''), type: 'button', 'aria-label': 'Sponsor: modifica', 'aria-expanded': E.spPanel ? 'true' : 'false', onclick: function () { E.spPanel = !E.spPanel; render(); } }, h('span', null, 'Sponsor')),
+      { left: pct(sr.x, im.width), top: pct(sr.y, im.height), width: pct(sr.w, im.width), height: pct(sr.h, im.height) }) : null;
+    var spPanel = E.spPanel ? h('div', { class: 'sppanel', role: 'dialog', 'aria-label': 'Sponsor dell\'immagine' }, ctl.sponsorControls(function () { E.spPanel = false; render(); })) : null;
     // il contenitore ha esattamente la misura dell'immagine mostrata: le zone toccabili coincidono con l'apertura
-    return place(h('div', { class: 'pickwrap' + (moving && E.photo ? ' moving' : '') }, img, tools,
-      E.photo && moving ? h('p', { class: 'phhint', role: 'status' }, 'Trascina la foto con un dito; tocca «Fine» per tornare a scorrere la pagina.') : null), { width: 'min(100%, calc(min(64vh, 560px) * ' + im.width + ' / ' + im.height + '))' });
+    return place(h('div', { class: 'pickwrap', 'data-zoom': String(E.zoom), 'data-px': String(E.px), 'data-py': String(E.py) }, img, drag, tools, spBtn, spPanel), { width: 'min(100%, calc(min(64vh, 560px) * ' + im.width + ' / ' + im.height + '))' });
   }
 
+  /* Navigazione rapida tra le immagini: categoria, poi girone / fase finale della categoria scelta. */
+  function exportNav(spec) {
+    var t = spec.o.t; if (!t || !S.snap) return null;
+    var cur = spec.key;
+    var cats = S.snap.tournaments.map(function (tt) { return h('li', null, h('a', { class: 'chip ic', href: U.href(tt.id, 'esporta'), 'aria-current': tt.id === t.id ? 'page' : null }, U.tIcon(tt.id, 18), h('span', null, tt.name))); });
+    var grp = [h('li', null, h('a', { class: 'chip', href: U.href(t.id, 'esporta'), 'aria-current': cur === 't|' + t.id ? 'page' : null }, 'Tutti i gironi'))]
+      .concat(t.groups.map(function (g) { return h('li', null, h('a', { class: 'chip', href: U.href(t.id, U.gSlug(g.id) + '-esporta'), 'aria-current': spec.o.g && spec.o.g.id === g.id && spec.o.scope === 'group' ? 'page' : null }, g.label)); }));
+    if (po0(t)) grp.push(h('li', null, h('a', { class: 'chip', href: U.href(t.id, 'playoff-esporta'), 'aria-current': spec.o.scope === 'playoff' ? 'page' : null }, 'Fase finale')));
+    return h('div', { class: 'expnav' }, h('nav', { 'aria-label': 'Categorie' }, h('ul', { class: 'chips four' }, cats)), h('nav', { 'aria-label': 'Gironi e fase finale di ' + t.name }, h('ul', { class: 'chips' }, grp)));
+  }
   /* ---------- Esportazione card (solo risultati ufficiali) ---------- */
   function viewExport(spec) {
     var key = spec.key + '|' + S.snap.meta.dataVersion;
     var isMatch = spec.o.scope === 'match', spItems = (S.snap.sponsors && S.snap.sponsors.items) || [];
     if (!S.exp || S.exp.key !== key) {
-      var def = isMatch ? U.sponsorOf(S.snap, spec.o.x && spec.o.x.m ? spec.o.x.m.id : null) : spec.o.scope === 'riepilogo' ? spItems.filter(function (x) { return x.main; })[0] || null : null; // riepilogo: solo il partner principale, mai lo sponsor di un singolo incontro
-      releaseExp(); S.exp = { key: key, format: isMatch ? 'story' : spec.o.scope === 'riepilogo' ? 'riepilogo' : 'social', res: null, msg: null, working: false, sp: def ? def.id : '', sp2: '', spPos: 'bottom', spBig: false, spRing: false, photo: null, zoom: 1, px: 0.5, py: 0.5 };
+      var def = isMatch ? U.sponsorOf(S.snap, spec.o.x && spec.o.x.m ? spec.o.x.m.id : null) : spItems.filter(function (x) { return x.main; })[0] || null; // gironi, riepilogo, fase finale, ultimi risultati: partner principale preselezionato (modificabile); mai lo sponsor di un singolo incontro
+      S.expPage = 0; var flash = S.flash; S.flash = null; releaseExp(); S.exp = { key: key, msg: flash || null, format: isMatch ? 'story' : spec.o.scope === 'riepilogo' || spec.o.scope === 'tournament' ? 'riepilogo' : 'social', res: null, working: false, sp: def ? def.id : '', sp2: '', spPos: 'bottom', spBig: false, spRing: false, photo: null, zoom: 1, px: 0.5, py: 0.5 };
     }
     var E = S.exp, X = root.PCPExport;
-    var again = function (ch) { var keep = { key: key, only: E.only || '', format: E.format, res: null, msg: null, working: false, sp: E.sp, sp2: E.sp2, spPos: E.spPos, spBig: E.spBig, spRing: E.spRing, photo: E.photo, zoom: E.zoom, px: E.px, py: E.py, moving: E.moving, prev: E.res || E.prev || null }; Object.keys(ch).forEach(function (k2) { keep[k2] = ch[k2]; }); if (E.res && E.prev) freeRes(E.prev); S.exp = keep; render(); }; // l'anteprima precedente resta visibile finché la nuova è pronta: la pagina non salta
+    var again = function (ch) { var keep = { key: key, only: E.only || '', format: E.format, res: null, msg: null, working: false, sp: E.sp, sp2: E.sp2, spPos: E.spPos, spBig: E.spBig, spRing: E.spRing, photo: E.photo, zoom: E.zoom, px: E.px, py: E.py, moving: E.moving, spPanel: E.spPanel, prev: E.res || E.prev || null }; Object.keys(ch).forEach(function (k2) { keep[k2] = ch[k2]; }); if (E.res && E.prev) freeRes(E.prev); S.exp = keep; render(); }; // l'anteprima precedente resta visibile finché la nuova è pronta: la pagina non salta
     var spSel = [E.sp, E.sp2].filter(function (id, i, a) { return id && a.indexOf(id) === i; }).map(function (id) { return spItems.filter(function (x) { return x.id === id; })[0]; }).filter(Boolean);
     var RS = E.res || E.prev; // immagini mostrate: quelle pronte o, mentre si rigenerano, le precedenti
     if (!E.res && !E.working) {
       E.working = true;
       var o2 = spec.o.scope === 'riepilogo' && E.only ? Object.assign({}, spec.o, { ts: spec.o.ts.filter(function (tt) { return tt.id === E.only; }) }) : spec.o;
-      X.render(Object.assign({ env: S.snap.meta.env, stamp: S.fetchedAt || new Date().toISOString(), format: E.format, sponsors: spSel, sponsorOpt: { pos: E.spPos, big: !!E.spBig, ring: !!E.spRing }, photoUrl: isMatch ? E.photo : null, photoView: { zoom: E.zoom, x: E.px, y: E.py } }, o2))
+      X.render(Object.assign({ demo: !!(root.PCP_CONFIG && root.PCP_CONFIG.demo), demoPrivate: !!(root.PCP_CONFIG && root.PCP_CONFIG.demoPrivate), env: S.snap.meta.env, stamp: S.fetchedAt || new Date().toISOString(), format: E.format, sponsors: spSel, sponsorOpt: { pos: E.spPos, big: !!E.spBig, ring: !!E.spRing }, photoUrl: isMatch ? E.photo : null, photoView: { zoom: E.zoom, x: E.px, y: E.py } }, o2))
         .then(function (res) { E.res = res; E.working = false; if (E.prev) { freeRes(E.prev); E.prev = null; } if (S.exp === E) render(); else freeRes(res); })
         .catch(function () { E.working = false; E.msg = 'Non è stato possibile creare le immagini su questo dispositivo.'; if (S.exp === E) render(); });
     }
+    var sponsorControls = function (close) {
+      var sel = h('select', { class: 'in', id: 'exp-sp', onchange: function () { again({ sp: sel.value }); } }, [h('option', { value: '' }, 'Nessun logo')].concat(spItems.map(function (x) { return h('option', { value: x.id }, x.name + (x.main ? ' (principale)' : '')); }))); sel.value = E.sp || '';
+      return [h('label', { class: 'f', for: 'exp-sp' }, isMatch ? 'Sponsor / partner' : 'Sponsor / partner nell\'immagine (facoltativo)'), sel,
+        isMatch && spItems.length > 1 && E.sp ? [h('label', { class: 'f', for: 'exp-sp2' }, 'Secondo sponsor (i due loghi si dividono la larghezza)'),
+          (function () { var s2 = h('select', { class: 'in', id: 'exp-sp2', onchange: function () { again({ sp2: s2.value }); } }, [h('option', { value: '' }, 'Nessun secondo logo')].concat(spItems.filter(function (x) { return x.id !== E.sp; }).map(function (x) { return h('option', { value: x.id }, x.name); }))); s2.value = E.sp2 || ''; return s2; })()] : null,
+        isMatch && E.sp ? [h('label', { class: 'f', for: 'exp-pos' }, 'Posizione'),
+          (function () { var sp = h('select', { class: 'in', id: 'exp-pos', onchange: function () { again({ spPos: sp.value }); } }, [h('option', { value: 'bottom' }, 'In basso, sotto il risultato'), h('option', { value: 'top' }, 'In alto, sopra la foto')]); sp.value = E.spPos || 'bottom'; return sp; })(),
+          h('label', { class: 'perm', for: 'exp-big' }, h('input', { type: 'checkbox', id: 'exp-big', checked: !!E.spBig, onchange: function (ev) { again({ spBig: ev.target.checked }); } }), h('span', null, 'Logo più grande')),
+          h('label', { class: 'perm', for: 'exp-ring' }, h('input', { type: 'checkbox', id: 'exp-ring', checked: !!E.spRing, onchange: function (ev) { again({ spRing: ev.target.checked }); } }), h('span', null, 'Cornice dorata')),
+          h('button', { class: 'btn sec2', type: 'button', onclick: function () { again({ sp: '', sp2: '', spPanel: false }); } }, 'Togli lo sponsor')] : null,
+        close ? h('button', { class: 'btn', type: 'button', onclick: close }, 'Fatto') : null];
+    };
+    var ctl = { sponsorControls: sponsorControls };
     var canShare = function (file) { try { return !!(navigator.canShare && navigator.canShare({ files: [file] })); } catch (e) { return false; } };
     var say = function (m) { E.msg = m; render(); };
     var anyShare = false; try { anyShare = !!(E.res && canShare(new File([E.res.images[0].blob], 'x.png', { type: 'image/png' }))); } catch (e) { anyShare = false; }
     return [
       h('a', { class: 'back', href: spec.back }, '‹ ' + spec.backLabel),
       spec.o.t ? pageTitle(spec.o.t, 'Esporta immagini') : h('h1', { class: 'h1' }, 'Esporta immagini'),
+      exportNav(spec),
       h('p', { class: 'sub' }, spec.title + ' — con logo e colori del club, solo risultati ufficiali.'),
-      h('div', { class: 'chips two', role: 'group', 'aria-label': 'Formato' }, Object.keys(X.FORMATS).filter(function (id) { var f = X.FORMATS[id]; return (!f.only || f.only === spec.o.scope) && f.not !== spec.o.scope; }).map(function (id) {
-        var f = X.FORMATS[id];
-        return h('button', { class: 'chip col', type: 'button', 'aria-pressed': E.format === id ? 'true' : 'false', onclick: function () { if (E.format === id) return; again({ format: id }); } },
-          h('strong', null, f.label), h('span', { class: 'sub' }, f.w + '×' + f.h));
-      })),
-      spec.o.scope === 'riepilogo' ? h('div', { class: 'chips five', role: 'group', 'aria-label': 'Tornei da includere' }, [['', 'Tutti']].concat(spec.o.ts.map(function (tt) { return [tt.id, tt.name]; })).map(function (c) {
-        return h('button', { class: 'chip', type: 'button', 'aria-pressed': (E.only || '') === c[0] ? 'true' : 'false', onclick: function () { if ((E.only || '') !== c[0]) again({ only: c[0] }); } }, c[1]);
-      })) : null,
-      spItems.length ? h('div', { class: 'card' }, h('label', { class: 'f', for: 'exp-sp' }, 'Sponsor / partner nell\'immagine (facoltativo)'),
-        (function () { var sel = h('select', { class: 'in', id: 'exp-sp', onchange: function () { again({ sp: sel.value }); } }, [h('option', { value: '' }, 'Nessun logo')].concat(spItems.map(function (x) { return h('option', { value: x.id }, x.name + (x.main ? ' (principale)' : '')); }))); sel.value = E.sp || ''; return sel; })(),
-        isMatch && spItems.length > 1 && E.sp ? [h('label', { class: 'f', for: 'exp-sp2' }, 'Secondo sponsor (facoltativo: i due loghi si dividono la larghezza)'),
-          (function () { var s2 = h('select', { class: 'in', id: 'exp-sp2', onchange: function () { again({ sp2: s2.value }); } }, [h('option', { value: '' }, 'Nessun secondo logo')].concat(spItems.filter(function (x) { return x.id !== E.sp; }).map(function (x) { return h('option', { value: x.id }, x.name); }))); s2.value = E.sp2 || ''; return s2; })()] : null,
-        isMatch && E.sp ? [h('label', { class: 'f', for: 'exp-pos' }, 'Posizione dello sponsor'),
-          (function () { var sp = h('select', { class: 'in', id: 'exp-pos', onchange: function () { again({ spPos: sp.value }); } }, [h('option', { value: 'bottom' }, 'In basso, sotto il risultato'), h('option', { value: 'top' }, 'In alto, sopra la foto')]); sp.value = E.spPos || 'bottom'; return sp; })(),
-          h('label', { class: 'perm', for: 'exp-big' }, h('input', { type: 'checkbox', id: 'exp-big', checked: !!E.spBig, onchange: function (ev) { again({ spBig: ev.target.checked }); } }), h('span', null, 'Logo più grande')),
-          h('label', { class: 'perm', for: 'exp-ring' }, h('input', { type: 'checkbox', id: 'exp-ring', checked: !!E.spRing, onchange: function (ev) { again({ spRing: ev.target.checked }); } }), h('span', null, 'Evidenzia con cornice dorata')),
-          h('p', { class: 'sub' }, 'Lo sfondo dietro al logo si adatta da solo: se il logo ha il suo sfondo (es. blu) viene continuato, altrimenti è bianco.')] : null) : null,
-      isMatch ? h('div', { class: 'card' }, h('label', { class: 'f', for: 'exp-ph' }, 'Fotografia dell\'incontro (facoltativa)'),
-        h('input', { class: 'in', id: 'exp-ph', type: 'file', accept: 'image/*', onchange: function (ev) { var f = ev.target.files && ev.target.files[0]; if (!f) return; if (E.photo) URL.revokeObjectURL(E.photo); again({ photo: URL.createObjectURL(f), zoom: 1, px: 0.5, py: 0.5 }); } }),
-        h('p', { class: 'sub' }, 'Puoi anche toccare l\'area foto dell\'anteprima; con «Sposta foto» la trascini per inquadrare tutti i giocatori. La foto resta sul tuo dispositivo, non viene inviata a nessuno: entra solo nell\'immagine che crei qui. Senza foto l\'apertura resta trasparente. Condividila soltanto se le persone ritratte sono d\'accordo.'),
-        E.photo ? [
-          h('label', { class: 'f', for: 'exp-zoom' }, 'Ingrandisci'), h('input', { class: 'in', id: 'exp-zoom', type: 'range', min: '1', max: '3', step: '0.05', value: String(E.zoom), onchange: function (ev) { again({ zoom: Number(ev.target.value) }); } }),
-          h('label', { class: 'f', for: 'exp-px' }, 'Sposta a sinistra / destra'), h('input', { class: 'in', id: 'exp-px', type: 'range', min: '0', max: '1', step: '0.02', value: String(E.px), onchange: function (ev) { again({ px: Number(ev.target.value) }); } }),
-          h('label', { class: 'f', for: 'exp-py' }, 'Sposta in alto / in basso'), h('input', { class: 'in', id: 'exp-py', type: 'range', min: '0', max: '1', step: '0.02', value: String(E.py), onchange: function (ev) { again({ py: Number(ev.target.value) }); } }),
-          h('button', { class: 'btn sec2', type: 'button', onclick: function () { URL.revokeObjectURL(E.photo); again({ photo: null, zoom: 1, px: 0.5, py: 0.5 }); } }, 'Togli la foto')] : null) : null,
       E.msg ? h('div', { class: 'note info', role: 'status' }, E.msg) : null,
       !(E.res || E.prev) ? h('div', { class: 'card empty', role: 'status' }, 'Creo le immagini…') : [
         h('p', { class: 'sub', role: 'status' }, !E.res ? 'Aggiorno l\'anteprima…' : RS.images.length === 1 ? '1 immagine' : RS.images.length + ' immagini: il contenuto è diviso su più pagine per non tagliare nulla.'),
-        RS.images.map(function (im, i) {
+        (function () {
+          var N = RS.images.length, cur = Math.min(Math.max(0, S.expPage || 0), N - 1), im = RS.images[cur], i = cur;
+          var go = function (d) { S.expPage = (cur + d + N) % N; render(); };
           var file = null; try { file = new File([im.blob], im.name, { type: 'image/png' }); } catch (e) { file = null; }
-          return h('section', { class: 'card exp' + (E.res ? '' : ' updating') },
-            isMatch && RS.report.aperture ? photoPicker(im, E, again, RS) : h('img', { src: im.url, alt: 'Anteprima immagine ' + (i + 1) + ' di ' + RS.images.length + ': ' + spec.title, width: im.width, height: im.height }),
+          return [N > 1 ? h('div', { class: 'carnav', role: 'group', 'aria-label': 'Immagini da condividere' },
+              h('button', { class: 'btn sec2 car', type: 'button', 'aria-label': 'Immagine precedente', onclick: function () { go(-1); } }, '‹'),
+              h('strong', { class: 'carpos', role: 'status' }, 'Immagine ' + (cur + 1) + ' di ' + N),
+              h('button', { class: 'btn sec2 car', type: 'button', 'aria-label': 'Immagine successiva', onclick: function () { go(1); } }, '›')) : null,
+            h('section', { class: 'card exp' + (E.res ? '' : ' updating') },
+            isMatch && RS.report.aperture ? photoPicker(im, E, again, RS, ctl) : h('img', { src: im.url, alt: 'Anteprima immagine ' + (i + 1) + ' di ' + N + ': ' + spec.title, width: im.width, height: im.height }),
             !E.res ? null : h('div', { class: 'btnrow two' },
               file && canShare(file) ? h('button', { class: 'btn', type: 'button', onclick: function () {
                 navigator.share({ files: [file], title: 'Elba Winter Championship' }).catch(function (e) { if (e && e.name !== 'AbortError') say('Condivisione non riuscita: usa "Scarica PNG".'); });
@@ -1869,9 +2054,29 @@ window.PCPDemoShow = function (which) {
               h('button', { class: 'btn' + (file && canShare(file) ? ' sec2' : ''), type: 'button', onclick: function () {
                 U.saveFile(im.name, im.blob).then(function (how) { say(how === 'saved' ? 'Immagine salvata.' : 'Download avviato: ' + im.name); })
                   .catch(function (e) { say(e && e.code === 'declined' ? 'Salvataggio annullato.' : 'Salvataggio non riuscito: tieni premuto sull\'immagine e scegli "Salva".'); });
-              } }, U.icon('download', 22), h('span', null, 'Scarica PNG'))));
-        }),
-        h('p', { class: 'sub' }, (anyShare ? '"Condividi…" apre il menu del telefono, da cui scegli WhatsApp, Instagram o un\'altra app installata. ' : 'Dopo il salvataggio l\'immagine si condivide dalla galleria o da WhatsApp e Instagram. ') + 'In alternativa tieni premuto sull\'immagine per salvarla.')]
+              } }, U.icon('download', 22), h('span', null, 'Scarica PNG')))),
+            N > 1 && E.res ? h('div', { class: 'btnrow' }, h('button', { class: 'btn sec2', type: 'button', onclick: function () {
+              Promise.all(RS.images.map(function (x) { return x.blob.arrayBuffer().then(function (ab) { return { name: x.name, data: new Uint8Array(ab) }; }); })).then(function (files) {
+                var zname = 'ewc-' + (spec.o.t ? U.tSlug(spec.o.t.id) : 'immagini') + (spec.o.g && spec.o.scope !== 'match' ? '-' + U.gSlug(spec.o.g.id) : '') + '-' + N + '-immagini.zip';
+                return U.saveFile(zname, U.zipBlob(files)).then(function (how) { say(how === 'saved' ? 'ZIP salvato.' : 'Download avviato: ' + zname); });
+              }).catch(function () { say('Non è stato possibile creare lo ZIP: scarica le immagini una alla volta.'); });
+            } }, U.icon('download', 22), h('span', null, 'Scarica tutte (ZIP, ' + N + ' immagini)'))) : null];
+        })(),
+        h('p', { class: 'sub' }, (anyShare ? '"Condividi…" apre il menu del telefono, da cui scegli WhatsApp, Instagram o un\'altra app installata. ' : 'Dopo il salvataggio l\'immagine si condivide dalla galleria o da WhatsApp e Instagram. ') + 'In alternativa tieni premuto sull\'immagine per salvarla.')],
+      h('div', { class: 'chips two', role: 'group', 'aria-label': 'Formato' }, Object.keys(X.FORMATS).filter(function (id) { var f = X.FORMATS[id]; return (!f.only || [].concat(f.only).indexOf(spec.o.scope) >= 0) && f.not !== spec.o.scope; }).map(function (id) {
+        var f = X.FORMATS[id];
+        return h('button', { class: 'chip col', type: 'button', 'aria-pressed': E.format === id ? 'true' : 'false', onclick: function () { if (E.format === id) return; again({ format: id }); } },
+          h('strong', null, f.label), h('span', { class: 'sub' }, f.w + '×' + f.h));
+      })),
+      spec.o.scope === 'riepilogo' ? h('div', { class: 'chips five', role: 'group', 'aria-label': 'Tornei da includere' }, [['', 'Tutti']].concat(spec.o.ts.map(function (tt) { return [tt.id, tt.name]; })).map(function (c) {
+        return h('button', { class: 'chip', type: 'button', 'aria-pressed': (E.only || '') === c[0] ? 'true' : 'false', onclick: function () { if ((E.only || '') !== c[0]) again({ only: c[0] }); } }, c[1]);
+      })) : null,
+      !isMatch && spItems.length ? h('div', { class: 'card' }, sponsorControls(null)) : null,
+      isMatch && spItems.length && !E.sp ? h('div', { class: 'card' }, sponsorControls(null)) : null,
+      isMatch ? h('div', { class: 'card ph' }, h('input', { class: 'sr', id: 'exp-ph', type: 'file', accept: 'image/*', 'aria-label': 'Scegli la fotografia dell\'incontro', onchange: function (ev) { var f = ev.target.files && ev.target.files[0]; if (!f) return; if (E.photo) URL.revokeObjectURL(E.photo); again({ photo: URL.createObjectURL(f), zoom: 1, px: 0.5, py: 0.5 }); } }),
+        h('p', { class: 'sub' }, 'Foto: tocca l\'area foto dell\'anteprima, poi trascinala per inquadrare e usa + / − per ingrandire. Resta sul tuo dispositivo e non viene inviata a nessuno. Condividila solo se le persone ritratte sono d\'accordo.'),
+        E.photo ? h('button', { class: 'btn sec2', type: 'button', onclick: function () { URL.revokeObjectURL(E.photo); again({ photo: null, zoom: 1, px: 0.5, py: 0.5 }); } }, 'Togli la foto') : null,
+        E.sp ? h('p', { class: 'sub' }, 'Sponsor: tocca l\'area Sponsor nell\'anteprima per cambiarlo, spostarlo o toglierlo.') : null) : null,
     ];
   }
   function freeRes(res) { (res && res.images || []).forEach(function (im) { try { URL.revokeObjectURL(im.url); } catch (e) { /* già rilasciata */ } }); }
@@ -2542,6 +2747,68 @@ window.PCPDemoShow = function (which) {
     return b;
   }
   function admBack() { return back('Amministrazione', { name: 'manage' }); }
+
+  /* ---------- Demo privata: scenari JSON, anteprima, «Applica solo in TEST», ripristino ---------- */
+  var CAN = {
+    ok: ['Classifiche ricalcolate a ogni risultato: punti 3/2/1/0, differenza game, scontro diretto.',
+      'Qualificazione: prime del girone e migliori terze (punti, poi differenza game), con stato «matematica» o «provvisoria».',
+      'Tabellone: quarti, semifinali e finale si riempiono da soli solo quando le coppie sono davvero determinate; poi il vincitore.',
+      'Correzioni e annullamenti: ricalcolano tutto a cascata; incontri finali non più coerenti vengono segnalati.',
+      'Regolamenti a versioni, con simulazione dell\'impatto prima di applicare.'],
+    no: ['Parità tra tre o più coppie: nessun criterio definito, la posizione resta «da verificare» e la fase finale aspetta.',
+      'Parità di punti con un super tie-break giocato: resta «da verificare» finché non si registra la regola «super tie-break escluso dai game» (qui: pulsante di prova sotto).',
+      'Abbinamenti dei quarti Silver e Bronze: schema provvisorio, non ancora comunicato dall\'organizzazione.',
+      'Criterio finale dopo gli scontri diretti: non specificato.',
+      'Soglia dei 10 game per la sconfitta 0–2: fissa nel motore, non modificabile da regolamento.']
+  };
+  function pkgDownload(pkg) { return U.saveFile('ewc-test-' + pkg.id + '.json', new Blob([root.PCPDemoPrivate.json(pkg)], { type: 'application/json' })); }
+  function pkgPreview(pkg) {
+    var DP = root.PCPDemoPrivate, r = DP.dryRun(pkg), ov, body, btns;
+    var sum = function (arr) { return h('table', { class: 'cmp' }, h('thead', null, h('tr', null, h('th', null, 'Torneo'), h('th', null, 'Gironi'), h('th', null, 'Finali'), h('th', null, 'Vincitore'))),
+      h('tbody', null, arr.map(function (x) { return h('tr', null, h('td', null, x.name), h('td', null, x.played + '/' + x.total + (x.official ? ' · ufficiale' : '')), h('td', null, String(x.playoffPlayed)), h('td', null, x.champion || '—')); }))); };
+    if (!r.ok) {
+      body = [h('div', { class: 'note err', role: 'alert' }, h('strong', null, 'Pacchetto respinto. Nessuna modifica applicata.')),
+        h('ul', { class: 'plain' }, r.errors.map(function (e) { return h('li', null, e); })), r.more ? h('p', { class: 'sub' }, '… e altri ' + r.more + ' errori.') : null];
+      btns = [btn('Chiudi', 'sec2', function () { ov.close(); })];
+    } else {
+      body = [h('p', null, h('strong', null, pkg.title || pkg.id), ' — ' + r.rows.length + ' risultati TEST (inventati).'),
+        h('p', { class: 'q' }, 'Prima'), sum(r.before), h('p', { class: 'q' }, 'Dopo'), sum(r.after),
+        h('p', { class: 'q' }, 'Risultati che verranno aggiunti'),
+        h('table', { class: 'cmp' }, h('tbody', null, r.rows.slice(0, 120).map(function (x) { return h('tr', null, h('td', null, x.matchId), h('td', null, x.names), h('td', null, scoreTxt(x.score)), h('td', null, (x.ptsA == null ? '–' : x.ptsA) + '–' + (x.ptsB == null ? '–' : x.ptsB))); }))),
+        h('div', { class: 'note info' }, 'Verrà modificata solo la copia di TEST in questo browser. Il torneo vero non viene toccato.')];
+      btns = [armBtn('Applica solo in TEST', 'Conferma: applica solo in TEST', '', function () {
+        var res = DP.apply(pkg); if (!res.ok) { ov.close(); return go({ name: 'adm-test', error: res.errors[0] }); }
+        return refresh().then(function () { ov.close(); go({ name: 'adm-test', flash: 'Applicati ' + res.rows.length + ' risultati TEST. Classifiche e tabelloni ricalcolati dal motore.' }); });
+      }), btn('Chiudi senza applicare', 'sec2', function () { ov.close(); })];
+    }
+    ov = U.overlay('Anteprima — TEST NON UFFICIALE', body, btns, { wide: true });
+  }
+  function viewAdmTest() {
+    var DP = root.PCPDemoPrivate, V = A.view, pk = DP.packages();
+    var file = h('input', { class: 'in', id: 'tfile', type: 'file', accept: 'application/json,.json', onchange: function () {
+      var f = file.files[0]; if (!f) return; var rd = new FileReader();
+      rd.onload = function () { var pkg; try { pkg = JSON.parse(String(rd.result)); } catch (e) { return go({ name: 'adm-test', error: 'Il file non è un JSON valido. Nessuna modifica applicata.' }); } pkgPreview(pkg); };
+      rd.readAsText(f); file.value = ''; } });
+    var stbFix = armBtn('Registra in TEST: super tie-break escluso dai game', 'Conferma (solo TEST)', 'sec2', function () {
+      var rows = (A.st && A.st.ruleParams) || [], n = 0;
+      return rows.reduce(function (p, x) { return p.then(function () {
+        return call('rulesApply', { tournamentId: x.tournamentId, changes: { stbInGameDiff: 'ESCLUSO' }, expectedVersion: x.version, note: 'Prova TEST: super tie-break non entra nei game', extraordinary: true, idempotencyKey: uuid() })
+          .then(function () { n++; }, function (e) { if (!(e && e.code === 'NESSUNA_MODIFICA')) throw e; }); }); }, Promise.resolve())
+        .then(refresh).then(function () { go({ name: 'adm-test', flash: n ? 'Regola registrata in TEST su ' + n + ' tornei: le parità con super tie-break ora si risolvono con differenza game e scontro diretto.' : 'La regola era già registrata.' }); });
+    });
+    return [admBack(), h('h1', { class: 'h1' }, 'Prova e scenari — TEST'), errBox(V.error), flash(),
+      h('div', { class: 'note warn' }, h('strong', null, 'TEST — NON UFFICIALE. '), 'Copia isolata: i dati restano solo in questo browser, la pagina non fa nessuna richiesta di rete e non usa credenziali reali. I ' + DP.refIds().length + ' risultati ufficiali già giocati (aggiornamento LIVE v' + DP.liveVersion() + ') sono di riferimento e non si modificano da file.'),
+      h('section', { class: 'card' }, h('h2', null, 'Scenari pronti'), h('p', { class: 'sub' }, 'Scarica il JSON e ricaricalo qui sotto, oppure provalo subito. Per le fasi finali carica prima «Gironi completi».'),
+        pk.map(function (p) { return h('div', { class: 'mitem' }, h('strong', null, p.title), h('div', { class: 'st2' }, p.description + ' (' + p.results.length + ' risultati)'),
+          h('div', { class: 'btnrow' }, btn('Scarica JSON', 'sec2', function () { pkgDownload(p); }), btn('Prova subito', '', function () { pkgPreview(p); }))); })),
+      h('section', { class: 'card' }, h('h2', null, 'Carica un file JSON'), h('p', { class: 'sub' }, 'Prima di applicare vedi l\'anteprima. Se c\'è anche un solo errore non cambia nulla.'), field('tfile', 'File JSON di risultati TEST', file)),
+      h('section', { class: 'card' }, h('h2', null, 'Regola di prova'), h('p', { class: 'sub' }, 'Per vedere cosa cambia con le parità che coinvolgono un super tie-break.'), h('div', { class: 'btnrow' }, stbFix)),
+      h('section', { class: 'card' }, h('h2', null, 'Ripristina'), h('p', { class: 'sub' }, 'Torna ai dati iniziali di TEST (regole e risultati ufficiali di riferimento).'),
+        h('div', { class: 'btnrow' }, armBtn('Ripristina dati iniziali TEST', 'Conferma ripristino TEST', 'danger', function () { DP.reset(); return refresh().then(function () { go({ name: 'adm-test', flash: 'Dati iniziali TEST ripristinati.' }); }); }))),
+      h('section', { class: 'card' }, h('h2', null, 'Cosa fa già il motore'), h('ul', { class: 'plain' }, CAN.ok.map(function (x) { return h('li', null, '✓ ' + x); })),
+        h('h2', null, 'Cosa resta da verificare o non c\'è'), h('ul', { class: 'plain' }, CAN.no.map(function (x) { return h('li', null, '• ' + x); })),
+        h('p', { class: 'sub' }, 'Nessun avanzamento è simulato a mano: tutto ciò che vedi nei tabelloni viene calcolato dal motore.'))];
+  }
   function viewAdminMenu() {
     var item = function (perm, view, title, sub) { return (Array.isArray(perm) ? perm.some(can) : can(perm)) ? h('button', { class: 'mitem', type: 'button', onclick: function () { go({ name: view }); } }, title, h('div', { class: 'st2' }, sub)) : null; };
     return [h('h2', { class: 'sec' }, 'Amministrazione'), h('div', { class: 'menu' },
@@ -2552,6 +2819,7 @@ window.PCPDemoShow = function (which) {
       item('publication.manage', 'adm-sponsors', 'Sponsor e partner', 'Loghi per immagini e incontri'),
 
       item(['backup.export', 'backup.restore', 'publication.manage'], 'adm-backup', 'Backup e pagine pubbliche', 'Esportazione, ripristino, controllo di integrità'),
+      CFG.demoPrivate ? item('admin.read', 'adm-test', 'Prova e scenari TEST', 'Carica JSON di risultati inventati, anteprima, ripristino') : null,
       item('data.delete', 'adm-delete', 'Eliminazioni e cestino', 'Operazioni definitive, protette'))];
   }
   function copyBox(text, label) {
@@ -2659,10 +2927,12 @@ window.PCPDemoShow = function (which) {
       h('p', { class: 'sub' }, 'Versione in vigore: ' + P.version + ' — ' + P.source + '. Ogni modifica crea una nuova versione: le versioni precedenti restano in archivio e i risultati registrati non cambiano.'),
       P.confirmed ? null : h('div', { class: 'note warn' }, 'Questo torneo non ha ancora un regolamento confermato. Inserisci solo le regole comunicate dall\'organizzatore.'),
       started ? h('div', { class: 'note warn' }, h('strong', null, 'Fase finale già iniziata'), 'Le modifiche che cambiano classifiche o qualificate sono bloccate. Si possono applicare solo con la procedura straordinaria, con motivazione estesa.') : null,
-      h('section', { class: 'card' }, h('h2', null, 'Punti in classifica'), h('div', { class: 'two' }, h('div', null, field('r-win20', 'Vittoria 2-0', e.win20)), h('div', null, field('r-win21', 'Vittoria al super tie-break', e.win21)),
-        h('div', null, field('r-lsp', 'Sconfitta al super tie-break', e.lossStbPts)), h('div', null, field('r-lsg', 'Soglia game nei due set per quel punto (0 = sempre)', e.lossStbMinGames))),
-      h('div', { class: 'two' }, h('div', null, field('r-l02', 'Sconfitta 0-2 con almeno 10 game nei due set: 1 punto', e.loss02))),
-        h('p', { class: 'sub' }, 'Le altre sconfitte valgono sempre 0 punti. Il punto per la sconfitta al super tie-break si assegna da solo quando la coppia ha raggiunto la soglia di game.')),
+      h('section', { class: 'card' }, h('h2', null, 'Punti in classifica'),
+        h('div', { class: 'two' }, h('div', null, field('r-win20', 'Vittoria 2-0', e.win20)), h('div', null, field('r-win21', 'Vittoria al super tie-break', e.win21))),
+        h('div', { class: 'two' }, h('div', null, field('r-l02', '1 punto per la sconfitta 0–2', e.loss02)),
+          h('div', null, h('span', { class: 'f' }, 'Soglia per la sconfitta 0–2'), h('p', { class: 'sub fixed' }, 'Almeno 10 game nei primi due set (valore fisso).'))),
+        h('div', { class: 'two' }, h('div', null, field('r-lsp', 'Punti per la sconfitta al super tie-break', e.lossStbPts)), h('div', null, field('r-lsg', 'Soglia game per la sconfitta al super tie-break (0 = sempre)', e.lossStbMinGames))),
+        h('p', { class: 'sub' }, 'Le due regole sono alternative, non si sommano: una sconfitta 0–2 e una sconfitta al super tie-break valgono al massimo il punto previsto dal proprio ramo. Si contano i game conquistati nei primi due set; i punti del super tie-break non sono game. Le altre sconfitte valgono 0 punti.')),
       h('section', { class: 'card' }, h('h2', null, 'Super tie-break e qualificazione'), field('r-wb2', 'Super tie-break: due punti di scarto obbligatori', e.stbWinByTwo),
         h('p', { class: 'sub' }, 'Il super tie-break non entra nella differenza game. A pari punti: differenza game, poi scontro diretto.'),
         field('r-pg', 'Qualificate per girone', e.perGroup), field('r-bn', 'In più: migliori piazzate tra i gironi, per punti e differenza game (0 = nessuna)', e.bestNext)),
@@ -2685,7 +2955,7 @@ window.PCPDemoShow = function (which) {
       h('div', { class: 'note ' + (sim.qualifiersChanged ? 'warn' : 'info') }, sim.qualifiersChanged ? 'Qualificazioni: le coppie qualificate alla fase finale CAMBIEREBBERO.' : 'Qualificazioni: nessun cambiamento.'),
       sim.incoherentPlayoff ? h('div', { class: 'note warn' }, sim.incoherentPlayoff + ' incontri della fase finale diventerebbero da verificare.') : null,
       (sim.notes || []).map(function (n) { return h('div', { class: 'note info' }, n); }),
-      h('p', { class: 'q' }, 'Regole in breve dopo la modifica'), h('ul', { class: 'plain' }, sim.brief.map(function (b) { return h('li', null, b); })),
+      h('p', { class: 'q' }, 'Regole in breve dopo la modifica'), h('ul', { class: 'plain' }, U.mergeBrief(sim.brief).map(function (b) { return h('li', null, b); })),
       critical ? h('div', { class: 'note err' }, h('strong', null, 'Procedura straordinaria'), 'La fase finale è già iniziata. Applicando, dichiari che l\'organizzazione ha deciso questa modifica: scrivi la decisione per esteso (almeno 20 caratteri).') : null,
       field('r-note', 'Da dove arriva la regola (obbligatorio)', note), err];
     var apply = armBtn(critical ? 'Applica con procedura straordinaria' : 'Applica come versione ' + sim.newVersion, 'Conferma: applica la versione ' + sim.newVersion, critical ? 'danger' : '', function () {
@@ -2934,11 +3204,20 @@ window.PCPDemoShow = function (which) {
     var file = h('input', { class: 'in', id: 'bfile', type: 'file', accept: 'application/json,.json', onchange: function () { var f = file.files[0]; if (!f) return; var rd = new FileReader(); rd.onload = function () { readBackup(rd.result); }; rd.readAsText(f); } });
     return [admBack(), h('h1', { class: 'h1' }, 'Backup e pagine pubbliche'), errBox(V.error), flash(),
       can('backup.export') ? [h('section', { class: 'card' }, h('h2', null, 'Backup'), h('p', null, 'Copia completa e datata dei dati (file JSON), indipendente dal tipo di archivio. Conservala fuori da questo sistema.'),
-        h('div', { class: 'btnrow' }, busyBtn('Scarica backup', '', function () {
-          return call('backup').then(function (b) { return download(backupName(b), b).then(function () { A.view.flash = 'Backup pronto: ' + b.counts.results + ' registrazioni risultato, versione dati ' + b.dataVersion + '.'; render(); },
-            function (e) { A.view.error = e && e.code === 'declined' ? 'Salvataggio annullato.' : 'Salvataggio non riuscito su questo dispositivo.'; render(); }); });
-        }), busyBtn('Controlla l\'integrità dei dati', 'sec2', function () {
-          return call('integrity').then(function (r) { A.view.flash = r.ok ? 'Dati integri (schema versione ' + r.schemaVersion + ', ' + r.counts.matches + ' incontri, ' + r.counts.results + ' registrazioni).' : null; A.view.error = r.ok ? null : 'Problemi trovati: ' + r.problems.slice(0, 3).join('; '); render(); });
+        V.bkOk ? h('div', { class: 'note ok', role: 'status' }, '✓ Dati integri: ' + V.bkOk.matches + ' incontri, ' + V.bkOk.results + ' registrazioni (schema ' + V.bkOk.schema + '). Puoi scaricare il backup.') : null,
+        h('div', { class: 'btnrow' }, V.bkOk ? busyBtn('Scarica backup', '', function () {
+          // il download riparte da una nuova verifica: se nel frattempo qualcosa non torna, non si scarica nulla
+          return call('integrity').then(function (r) {
+            if (!r.ok) { V.bkOk = null; A.view.error = 'Backup bloccato: ' + r.problems.slice(0, 3).join('; '); render(); return; }
+            return call('backup').then(function (b) { return download(backupName(b), b).then(function () { V.bkOk = null; A.view.flash = 'Backup scaricato: ' + b.counts.results + ' registrazioni risultato, versione dati ' + b.dataVersion + '.'; render(); },
+              function (e) { A.view.error = e && e.code === 'declined' ? 'Salvataggio annullato.' : 'Salvataggio non riuscito su questo dispositivo.'; render(); }); });
+          });
+        }) : null, busyBtn(V.bkOk ? 'Ripeti la verifica' : 'Verifica per backup', V.bkOk ? 'sec2' : '', function () {
+          return call('integrity').then(function (r) {
+            if (r.ok) { V.bkOk = { matches: r.counts.matches, results: r.counts.results, schema: r.schemaVersion }; A.view.error = null; A.view.flash = null; }
+            else { V.bkOk = null; A.view.flash = null; A.view.error = 'Verifica non superata, backup non disponibile: ' + r.problems.slice(0, 3).join('; '); }
+            render();
+          });
         })))] : null,
       can('backup.export') ? mailSection(V) : null,
       can('backup.restore') ? [h('h2', { class: 'sec' }, 'Ripristino / importazione'),
@@ -3004,10 +3283,10 @@ window.PCPDemoShow = function (which) {
 
   /* ---------- Disegno ---------- */
   var VIEWS = { boot: viewBoot, gate: viewGate, pick: viewPick, quick: viewQuick, wizard: viewWizard, summary: viewSummary, done: viewDone, manage: viewManage, reject: viewReject, match: viewMatch, act: viewAct, schedule: viewSchedule,
-    team: viewTeam, partner: viewPartner, withdraw: viewWithdraw, 'adm-access': viewAdmAccess, 'adm-role': viewAdmRole, 'adm-codes': viewAdmCodes, 'adm-rules': viewAdmRules, 'adm-playoff': viewAdmPlayoff, 'adm-sponsors': viewAdmSponsors, 'adm-links': viewAdmLinks, 'adm-backup': viewAdmBackup, 'adm-delete': viewAdmDelete };
+    team: viewTeam, partner: viewPartner, withdraw: viewWithdraw, 'adm-access': viewAdmAccess, 'adm-role': viewAdmRole, 'adm-codes': viewAdmCodes, 'adm-rules': viewAdmRules, 'adm-playoff': viewAdmPlayoff, 'adm-sponsors': viewAdmSponsors, 'adm-links': viewAdmLinks, 'adm-backup': viewAdmBackup, 'adm-delete': viewAdmDelete, 'adm-test': viewAdmTest };
   /* ogni vista dichiara il permesso che richiede: senza permesso non viene nemmeno disegnata (il server rifiuterebbe comunque) */
   var NEED = { match: 'admin.read', act: 'admin.read', schedule: 'matches.schedule', reject: 'proposals.review', manage: 'admin.read', team: 'teams.manage', partner: 'teams.manage', withdraw: 'teams.manage',
-    'adm-access': 'rbac.manage', 'adm-role': 'rbac.manage', 'adm-codes': 'teamcodes.manage', 'adm-rules': 'rules.manage', 'adm-playoff': 'playoff.manage', 'adm-sponsors': 'publication.manage', 'adm-links': 'admin.read', 'adm-delete': 'data.delete' };
+    'adm-access': 'rbac.manage', 'adm-role': 'rbac.manage', 'adm-codes': 'teamcodes.manage', 'adm-rules': 'rules.manage', 'adm-playoff': 'playoff.manage', 'adm-sponsors': 'publication.manage', 'adm-links': 'admin.read', 'adm-delete': 'data.delete', 'adm-test': 'admin.read' };
   function renderChrome() {
     var test = A.data ? A.data.meta.env !== 'PROD' : api.mode !== 'gasrun', n = A.view.name;
     U.header(hdr, { title: A.me && !A.me.anonymous ? 'Gestione' : 'Area risultati', sub: 'Elba Winter Championship', test: test, home: { href: PUB + U.href(), onclick: toPublic },
@@ -3047,6 +3326,7 @@ window.PCPDemoShow = function (which) {
   function boot() {
     booted = true;
     A.view = { name: 'boot' }; render();
+    if (CFG.demoPrivate && api.mode === 'local' && !U.session.get()) root.PCPDemoPrivate.autoAdmin();
     var s = U.session.get(); A.cred = s ? s.cred : null;
     var enter = function () { return refresh().then(function () { var p = pending; pending = null; if (p) p(); else start(); }); };
     var onErr = function (e) { go({ name: 'boot', error: e && e.message || 'Errore di caricamento.' }); };
