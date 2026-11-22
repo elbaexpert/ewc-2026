@@ -599,6 +599,8 @@ body.testmode .top{top:24px}
 
 /* Solo consultazione: nasconde barra inferiore, mantenendo invariato lo stile EWC */
 #bar{display:none!important}#pane-public{padding-bottom:0}
+/* Consultazione pubblica: nessun controllo di condivisione non operativo */
+.mshare,.topshare{display:none!important}
 </style>
 </head>
 <body>
@@ -996,7 +998,7 @@ window.PCPDemoShow = function (which) {
   function metaRow(m) {
     var txt = (m.playedOn ? 'Giocato ' + day(m.playedOn) : 'Registrato ' + when(m.firstAt || m.at)) + (m.corrected ? ' · corretto' : '');
     return h('div', { class: 'mrow' }, h('span', { class: 'meta' }, txt),
-      h('a', { class: 'mshare', href: matchHref(m.id), 'aria-label': 'Apri e condividi il risultato ' + m.a.name + ' – ' + m.b.name }, icon('share', 20)));
+      null);
   }
   /** Riga d'intestazione compatta degli elenchi: torneo/girone a sinistra, data e condivisione a destra (una sola riga). */
   function headRow(m, ctxEl) {
