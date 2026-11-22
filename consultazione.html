@@ -1692,7 +1692,7 @@ window.PCPDemoShow = function (which) {
   function cacheSet(s) { try { localStorage.setItem(CACHE_KEY, JSON.stringify({ snap: s, at: S.fetchedAt })); } catch (e) { /* archivio non disponibile: si prosegue senza */ } }
   /** Legge l'indirizzo: { t, g, playoff, recent, matchId, exp } */
   function route() {
-    var p = location.hash.replace(/^#\\/?/, '').toLowerCase();
+    var p = location.hash.replace(/^#\/?/, '').toLowerCase();
     return { t: /^(gold|silver|bronze|femm)$/.test(p) ? p : null, g: null, playoff: false, recent: false, matchId: null, exp: false, sit: false };
   }
 
