@@ -597,8 +597,8 @@ body.testmode .top{top:24px}
 @media (max-width: 460px) { #testbar { font-size: 10.5px; letter-spacing: 0; white-space: nowrap; overflow: hidden; } }
 
 
-/* Solo consultazione: nessuna barra Home / Area Club */
-#bar{display:none!important}#pane-public{padding-bottom:0}.ewc-choice .tile{min-height:108px}.ewc-choice .tile .tp{font-size:13px}.ewc-section{margin-top:16px}.ewc-section .card{margin-bottom:12px}
+/* Solo consultazione: nasconde barra inferiore, mantenendo invariato lo stile EWC */
+#bar{display:none!important}#pane-public{padding-bottom:0}
 </style>
 </head>
 <body>
@@ -1864,33 +1864,35 @@ window.PCPDemoShow = function (which) {
   /* Vista di consultazione: componenti ORIGINALI EWC, nessuna replica grafica */
   function viewConsultHome() {
     var ts = S.snap.tournaments;
+    var gp = function (t) { return t.groups.reduce(function (a, g) { return a + g.played; }, 0); };
+    var played = ts.reduce(function (a, t) { return a + gp(t); }, 0);
+    var total = ts.reduce(function (a, t) { return a + t.total; }, 0);
     return [
-      h('h1', { class: 'sr' }, 'Categorie del campionato'),
-      h('section', { class: 'hero', 'aria-label': 'Elba Winter Championship' },
-        h('p', { class: 'hero-k' }, 'Padel Club Portoferraio'),
-        h('p', { class: 'hero-n' }, 'Classifiche e risultati'),
-        h('p', { class: 'hero-k' }, 'Scegli la categoria per consultare tutti i gironi')),
-      h('nav', { 'aria-label': 'Seleziona la categoria' }, h('ul', { class: 'tiles ewc-choice' }, ts.map(function (t) {
-        var played = t.groups.reduce(function (sum, g) { return sum + g.played; }, 0);
-        return h('li', null, h('a', { class: 'tile t-' + t.id, href: U.href(t.id) },
-          U.tIcon(t.id, 40), h('span', { class: 'tn' }, t.name),
-          h('span', { class: 'tp' }, played + ' incontri giocati · Classifiche e risultati')));
-      })))
+      h('h1', { class: 'sr' }, 'Tornei'),
+      ts.length ? h('section', { class: 'hero', 'aria-label': 'Andamento del campionato' },
+        h('p', { class: 'hero-k' }, 'Quarta edizione'),
+        h('p', { class: 'hero-n' }, String(played), h('small', null, 'di ' + total + ' incontri giocati')),
+        h('div', { class: 'seg', role: 'img', 'aria-label': ts.map(function (t) { return t.name + ' ' + gp(t) + ' su ' + t.total; }).join(', ') },
+          ts.map(function (t) { var i = h('i'); i.style.width = (t.total ? Math.round(100 * gp(t) / t.total) : 0) + '%'; var sp = h('span', null, i); sp.style.flex = (t.total || 1) + ' 1 0'; return sp; }))) : null,
+      ts.length ? h('nav', { 'aria-label': 'Tornei' }, h('ul', { class: 'tiles' }, ts.map(function (t) {
+        return h('li', null, h('a', { class: 'tile t-' + t.id, href: U.href(t.id) }, U.tIcon(t.id, 40),
+          h('span', { class: 'tn' }, t.name), h('span', { class: 'tp' }, gp(t) + ' / ' + t.total + ' incontri'),
+          h('progress', { max: t.total || 1, value: gp(t), 'aria-label': 'Avanzamento ' + t.name + ': ' + gp(t) + ' incontri su ' + t.total })));
+      }))) : h('div', { class: 'card empty' }, 'Nessun torneo pubblicato al momento.')
     ];
   }
   function viewConsultTournament(t) {
+    var rec = U.collect([t], t.id);
     return [
-      backLink('#', 'Tutte le categorie'),
-      pageTitle(t, 'Torneo ' + t.name),
+      backLink('#', 'Tutti i tornei'), tournamentChips(t.id), pageTitle(t, 'Torneo ' + t.name),
       t.official ? null : unofficialNote(),
+      h('div', { class: 'cols' }, t.groups.map(function (g) { return h('div', null, standingsCard(t, g, true), groupNotes(g)); })),
       t.groups.map(function (g) {
         var played = U.collect([t], t.id, g.id);
-        return h('section', { class: 'ewc-section t-' + t.id },
-          standingsCard(t, g, false), groupNotes(g),
-          h('h2', { class: 'sec' }, 'Risultati · ' + g.label + ' (' + played.length + ')'),
+        return [h('h2', { class: 'sec' }, 'Risultati · ' + g.label + ' (' + played.length + ')'),
           played.length ? h('section', { class: 'card flush' }, played.map(function (x) {
             return h('div', { class: 'match' }, U.headRow(x.m), U.scoreCard(x.m));
-          })) : h('div', { class: 'card empty' }, 'Nessun risultato registrato in questo girone.'));
+          })) : h('div', { class: 'card empty' }, 'Nessun risultato registrato in questo girone.')];
       })
     ];
   }
